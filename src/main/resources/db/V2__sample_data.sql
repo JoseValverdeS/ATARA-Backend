@@ -12,13 +12,13 @@
 --   roles → anios_lectivos → niveles → escalas_valoracion
 --   → dimensiones_evaluacion → centros_educativos → materias
 --   → periodos → usuarios → secciones → usuarios_secciones
---   → estudiantes → contenidos → criterios_indicadores
+--   → estudiantes → matriculas → contenidos → criterios_indicadores
 --   → configuracion_alertas → evaluaciones → detalle_evaluacion
 --   → alertas
 -- ============================================================
 
 -- ============================================================
--- 1. ROLES
+-- 1. ROLES -- DATOS FIJOS
 -- ============================================================
 INSERT INTO roles (nombre, descripcion) VALUES
 ('ADMIN',        'Administrador del sistema con acceso total'),
@@ -26,13 +26,13 @@ INSERT INTO roles (nombre, descripcion) VALUES
 ('COORDINADOR',  'Coordinador pedagógico con acceso a reportes globales');
 
 -- ============================================================
--- 2. AÑO LECTIVO
+-- 2. AÑO LECTIVO -- DATOS FLEXIBLES
 -- ============================================================
 INSERT INTO anios_lectivos (anio, fecha_inicio, fecha_fin, activo) VALUES
 (2025, '2025-02-03', '2025-11-28', TRUE);
 
 -- ============================================================
--- 3. NIVELES ACADÉMICOS (catálogo completo 1°–6°)
+-- 3. NIVELES ACADÉMICOS (catálogo completo 1°–6°) -- DATOS FIJOS
 -- ============================================================
 INSERT INTO niveles (numero_grado, nombre, descripcion) VALUES
 (1, 'Primer Grado',  'Primer año de educación básica primaria'),
@@ -43,7 +43,7 @@ INSERT INTO niveles (numero_grado, nombre, descripcion) VALUES
 (6, 'Sexto Grado',   'Sexto año de educación básica primaria');
 
 -- ============================================================
--- 4. ESCALAS DE VALORACIÓN LIKERT
+-- 4. ESCALAS DE VALORACIÓN LIKERT -- DATOS FIJOS
 -- ============================================================
 INSERT INTO escalas_valoracion (nombre, etiqueta, valor_numerico, descripcion) VALUES
 ('Insuficiente', 'I', 1, 'El estudiante no alcanza los aprendizajes esperados'),
@@ -52,14 +52,14 @@ INSERT INTO escalas_valoracion (nombre, etiqueta, valor_numerico, descripcion) V
 ('Destacado',    'D', 4, 'El estudiante supera los aprendizajes esperados');
 
 -- ============================================================
--- 5. CENTROS EDUCATIVOS
+-- 5. CENTROS EDUCATIVOS -- DATOS FLEXIBLES
 -- ============================================================
 INSERT INTO centros_educativos (nombre, circuito, direccion_regional, telefono, correo) VALUES
 ('Escuela Simón Bolívar',          '01',  'DREH San José Central', '2222-1111', 'bolivar@mep.go.cr'),
 ('Escuela República de Colombia',  '02',  'DREH San José Norte',   '2233-4455', 'colombia@mep.go.cr');
 
 -- ============================================================
--- 6. PERÍODOS (5 períodos bimensuales en 2025)
+-- 6. PERÍODOS (5 períodos bimensuales en 2025) -- DATOS FLEXIBLES
 -- ============================================================
 INSERT INTO periodos (anio_lectivo_id, nombre, numero_periodo, fecha_inicio, fecha_fin, activo) VALUES
 (1, 'Período 1 – 2025', 1, '2025-02-03', '2025-03-28', FALSE),
@@ -69,7 +69,7 @@ INSERT INTO periodos (anio_lectivo_id, nombre, numero_periodo, fecha_inicio, fec
 (1, 'Período 5 – 2025', 5, '2025-09-29', '2025-11-28', FALSE);
 
 -- ============================================================
--- 7. USUARIOS
+-- 7. USUARIOS -- DATOS FLEXIBLES
 --
 -- ACCIÓN REQUERIDA antes de probar autenticación:
 --   Los hashes de abajo tienen formato BCrypt válido (60 chars)
@@ -96,7 +96,7 @@ INSERT INTO usuarios (nombre, apellidos, correo, password, rol_id) VALUES
 ('Andrea',  'Vargas Solano',    'avargas@atara.mep.go.cr',   '$2a$12$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 2);
 
 -- ============================================================
--- 8. SECCIONES
+-- 8. SECCIONES -- DATOS FLEXIBLES
 -- ============================================================
 INSERT INTO secciones (nombre, nivel_id, centro_id, anio_lectivo_id, docente_id, capacidad) VALUES
 ('A', 1, 1, 1, 2, 28),   -- Simón Bolívar  | 1° A | titular: María
@@ -110,21 +110,37 @@ INSERT INTO usuarios_secciones (usuario_id, seccion_id) VALUES
 (4, 2);  -- Andrea  → Bolívar 1°B
 
 -- ============================================================
--- 9. ESTUDIANTES  (todos en Bolívar 1°A = seccion_id 1)
+-- 9. ESTUDIANTES -- DATOS FLEXIBLES
+--
+--  Solo datos personales estables. La asignación a la sección
+--  del año 2025 se registra a continuación en matriculas.
 -- ============================================================
 INSERT INTO estudiantes
     (identificacion, nombre, apellido1, apellido2, fecha_nacimiento, genero,
-     seccion_id, nombre_acudiente, telefono_acudiente, correo_acudiente)
+     nombre_acudiente, telefono_acudiente, correo_acudiente)
 VALUES
 ('2018-1001', 'Luis',   'Hernández', 'Campos',  '2018-03-15', 'M',
-    1, 'Roberto Hernández', '8801-1122', 'roberto.h@gmail.com'),
+    'Roberto Hernández', '8801-1122', 'roberto.h@gmail.com'),
 ('2018-1002', 'Sofía',  'Ramírez',   'Jiménez', '2018-07-22', 'F',
-    1, 'Laura Ramírez',     '8803-3344', 'laura.r@gmail.com'),
+    'Laura Ramírez',     '8803-3344', 'laura.r@gmail.com'),
 ('2018-1003', 'Andrés', 'Torres',    'Mora',    '2018-11-05', 'M',
-    1, 'Gloria Torres',     '8805-5566', 'gloria.t@gmail.com');
+    'Gloria Torres',     '8805-5566', 'gloria.t@gmail.com');
 
 -- ============================================================
--- 10. MATERIAS
+-- 10. MATRÍCULAS — asignación de estudiantes a secciones -- DATOS FLEXIBLES
+--
+--  Los tres estudiantes quedan asignados a Bolívar 1°A (seccion_id=1)
+--  para el año lectivo 2025 (anio_lectivo_id=1).
+--  La restricción UNIQUE (estudiante_id, anio_lectivo_id) garantiza
+--  que un estudiante no pueda aparecer en dos secciones el mismo año.
+-- ============================================================
+INSERT INTO matriculas (estudiante_id, seccion_id, anio_lectivo_id, fecha_matricula) VALUES
+(1, 1, 1, '2025-02-03'),  -- Luis   → Bolívar 1°A, año 2025
+(2, 1, 1, '2025-02-03'),  -- Sofía  → Bolívar 1°A, año 2025
+(3, 1, 1, '2025-02-03');  -- Andrés → Bolívar 1°A, año 2025
+
+-- ============================================================
+-- 11. MATERIAS -- DATOS FIJOS
 -- ============================================================
 INSERT INTO materias (nombre, descripcion) VALUES
 ('Matemáticas',        'Aritmética, geometría y pensamiento lógico'),
@@ -134,7 +150,7 @@ INSERT INTO materias (nombre, descripcion) VALUES
 ('Educación Física',   'Desarrollo motriz, deporte y salud');
 
 -- ============================================================
--- 11. CONTENIDOS (sample: 2 por materia relevante)
+-- 12. CONTENIDOS (sample: 2 por materia relevante) -- DATOS FLEXIBLES
 -- ============================================================
 INSERT INTO contenidos (nombre, descripcion, materia_id) VALUES
 -- Matemáticas (materia_id = 1)
@@ -147,7 +163,7 @@ INSERT INTO contenidos (nombre, descripcion, materia_id) VALUES
 ('El ser vivo y su entorno',   'Ecosistemas, seres vivos y adaptaciones',              3);
 
 -- ============================================================
--- 12. DIMENSIONES DE EVALUACIÓN
+-- 13. DIMENSIONES DE EVALUACIÓN -- DATOS FIJOS
 -- ============================================================
 INSERT INTO dimensiones_evaluacion (nombre, descripcion, peso) VALUES
 ('Rendimiento Académico',     'Desempeño en las áreas curriculares',                  2.0),
@@ -157,7 +173,7 @@ INSERT INTO dimensiones_evaluacion (nombre, descripcion, peso) VALUES
 ('Asistencia',                'Regularidad y puntualidad en la asistencia',           1.0);
 
 -- ============================================================
--- 13. CRITERIOS / INDICADORES
+-- 14. CRITERIOS / INDICADORES -- DATOS FLEXIBLES
 -- ============================================================
 INSERT INTO criterios_indicadores (nombre, descripcion, contenido_id, dimension_id, peso) VALUES
 -- Contenido: Operaciones básicas (id=1) → Rendimiento Académico (id=1)
@@ -187,7 +203,7 @@ INSERT INTO criterios_indicadores (nombre, descripcion, contenido_id, dimension_
     'Regularidad en la asistencia a las lecciones',          1, 5, 1.0);
 
 -- ============================================================
--- 14. CONFIGURACIÓN DE ALERTAS (motor de reglas)
+-- 15. CONFIGURACIÓN DE ALERTAS (motor de reglas) -- DATOS FLEXIBLES
 -- ============================================================
 INSERT INTO configuracion_alertas
     (nombre, descripcion, umbral_minimo, umbral_maximo, tipo_alerta, nivel_resultante) VALUES
@@ -205,7 +221,10 @@ INSERT INTO configuracion_alertas
     NULL, NULL,  'PREVENTIVA', 'BAJO');
 
 -- ============================================================
--- 15. EVALUACIÓN — cabecera (Luis, Período 2, sección 1)
+-- 16. EVALUACIÓN — cabecera (Luis, Período 2, sección 1) -- DATOS FLEXIBLES
+--
+--  seccion_id=1 se toma de la matrícula de Luis en 2025.
+--  En producción, el backend lee matriculas para derivar seccion_id.
 -- ============================================================
 INSERT INTO evaluaciones
     (estudiante_id, periodo_id, usuario_id, seccion_id, observacion_general, origen_registro)
@@ -215,7 +234,7 @@ VALUES
  'MANUAL');
 
 -- ============================================================
--- 16. DETALLE DE EVALUACIÓN (7 criterios evaluados)
+-- 17. DETALLE DE EVALUACIÓN (7 criterios evaluados) -- DATOS FLEXIBLES
 --     escala_id: 1=Insuficiente  2=Básico  3=Satisfactorio  4=Destacado
 -- ============================================================
 INSERT INTO detalle_evaluacion (evaluacion_id, criterio_id, escala_id, observacion) VALUES
@@ -228,7 +247,7 @@ INSERT INTO detalle_evaluacion (evaluacion_id, criterio_id, escala_id, observaci
 (1, 7, 2, 'Faltó 4 lecciones durante el período sin justificación');
 
 -- ============================================================
--- 17. ALERTA (generada con base en criterio 2 – Multiplicación)
+-- 18. ALERTA (generada con base en criterio 2 – Multiplicación)
 -- ============================================================
 INSERT INTO alertas
     (estudiante_id, contenido_id, periodo_id, config_alerta_id,

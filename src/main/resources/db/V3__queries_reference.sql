@@ -9,10 +9,13 @@
 -- NOTAS TÉCNICAS:
 --   - Todas las vistas que filtran por período usan p.activo = TRUE
 --     para reflejar automáticamente el cambio de período.
---   - LEFT JOIN en dimensiones_evaluacion porque dimension_id
---     es nullable en criterios_indicadores.
---   - ev.seccion_id (no e.seccion_id) para capturar la sección
---     en el momento de la evaluación, no la sección actual.
+--   - JOIN (inner) en dimensiones_evaluacion porque dimension_id
+--     es NOT NULL en criterios_indicadores.
+--   - ev.seccion_id (no matriculas) para capturar la sección
+--     en el momento de la evaluación, no la matrícula actual.
+--   - vw_alertas_activas obtiene la sección del estudiante
+--     uniéndose a matriculas por (estudiante_id, anio_lectivo_id)
+--     derivado del periodo de la alerta.
 --   - e.estado = 'ACTIVO' excluye estudiantes inactivos/trasladados.
 -- ============================================================
 
@@ -32,12 +35,12 @@ SELECT
     m.id                                    AS materia_id,
     m.nombre                                AS materia,
     d.id                                    AS dimension_id,
-    COALESCE(d.nombre, 'Sin dimensión')     AS dimension,
+    d.nombre                                AS dimension,
     d.peso                                  AS dimension_peso
 FROM criterios_indicadores  ci
 JOIN contenidos             c   ON c.id  = ci.contenido_id
 JOIN materias               m   ON m.id  = c.materia_id
-LEFT JOIN dimensiones_evaluacion d ON d.id = ci.dimension_id;
+JOIN dimensiones_evaluacion d   ON d.id  = ci.dimension_id;
 
 COMMENT ON VIEW vw_criterios_completos IS 'Jerarquía completa: criterio → contenido → materia → dimensión.';
 
@@ -204,14 +207,16 @@ SELECT
     u.nombre || ' ' || u.apellidos        AS generada_por,
     p.nombre                                AS periodo
 FROM alertas                a
-JOIN estudiantes            e   ON e.id   = a.estudiante_id
-JOIN secciones              sec ON sec.id = e.seccion_id
-JOIN niveles                n   ON n.id   = sec.nivel_id
-JOIN centros_educativos     ce  ON ce.id  = sec.centro_id
-JOIN contenidos             c   ON c.id   = a.contenido_id
-JOIN materias               m   ON m.id   = c.materia_id
-JOIN periodos               p   ON p.id   = a.periodo_id
-LEFT JOIN usuarios          u   ON u.id   = a.generada_por
+JOIN estudiantes            e   ON e.id              = a.estudiante_id
+JOIN periodos               p   ON p.id              = a.periodo_id
+JOIN matriculas             mat ON mat.estudiante_id  = e.id
+                                AND mat.anio_lectivo_id = p.anio_lectivo_id
+JOIN secciones              sec ON sec.id             = mat.seccion_id
+JOIN niveles                n   ON n.id               = sec.nivel_id
+JOIN centros_educativos     ce  ON ce.id              = sec.centro_id
+JOIN contenidos             c   ON c.id               = a.contenido_id
+JOIN materias               m   ON m.id               = c.materia_id
+LEFT JOIN usuarios          u   ON u.id               = a.generada_por
 WHERE a.estado = 'ACTIVA'
 ORDER BY
     CASE a.nivel_alerta
@@ -237,7 +242,7 @@ SELECT
     p.nombre                                AS periodo,
     p.fecha_inicio,
     al.anio                                 AS anio_lectivo,
-    COALESCE(d.nombre, 'Sin dimensión')     AS dimension,
+    d.nombre                                AS dimension,
     d.peso                                  AS dimension_peso,
     ROUND(AVG(esc.valor_numerico), 2)       AS promedio_dimension
 FROM evaluaciones           ev
@@ -245,13 +250,49 @@ JOIN periodos               p   ON p.id             = ev.periodo_id
 JOIN anios_lectivos         al  ON al.id             = p.anio_lectivo_id
 JOIN detalle_evaluacion     de  ON de.evaluacion_id  = ev.id
 JOIN criterios_indicadores  ci  ON ci.id             = de.criterio_id
-LEFT JOIN dimensiones_evaluacion d ON d.id           = ci.dimension_id
+JOIN dimensiones_evaluacion d   ON d.id              = ci.dimension_id
 JOIN escalas_valoracion     esc ON esc.id            = de.escala_id
 JOIN estudiantes            e   ON e.id              = ev.estudiante_id
 WHERE e.estado = 'ACTIVO'
 GROUP BY ev.estudiante_id, e.nombre, e.apellido1,
          p.numero_periodo, p.nombre, p.fecha_inicio,
          al.anio, d.id, d.nombre, d.peso
-ORDER BY ev.estudiante_id, al.anio, p.numero_periodo, d.nombre NULLS LAST;
+ORDER BY ev.estudiante_id, al.anio, p.numero_periodo, d.nombre;
 
 COMMENT ON VIEW vw_historial_por_dimension IS 'Promedio por dimensión en cada período histórico. Filtrar por estudiante_id en el backend.';
+
+
+-- ============================================================
+-- V9. Estudiantes matriculados en el año lectivo activo
+--     Fuente canónica para saber en qué sección está cada
+--     estudiante durante el año en curso.
+-- ============================================================
+CREATE OR REPLACE VIEW vw_matriculas_anio_activo AS
+SELECT
+    e.id                                    AS estudiante_id,
+    e.identificacion,
+    e.nombre || ' ' || e.apellido1         AS nombre_completo,
+    e.apellido2,
+    e.genero,
+    e.estado                                AS estado_estudiante,
+    mat.id                                  AS matricula_id,
+    mat.estado                              AS estado_matricula,
+    mat.fecha_matricula,
+    s.id                                    AS seccion_id,
+    s.nombre                                AS seccion,
+    n.numero_grado,
+    n.nombre                                AS nivel,
+    ce.id                                   AS centro_id,
+    ce.nombre                               AS centro,
+    al.anio                                 AS anio_lectivo
+FROM matriculas             mat
+JOIN estudiantes            e   ON e.id   = mat.estudiante_id
+JOIN secciones              s   ON s.id   = mat.seccion_id
+JOIN niveles                n   ON n.id   = s.nivel_id
+JOIN centros_educativos     ce  ON ce.id  = s.centro_id
+JOIN anios_lectivos         al  ON al.id  = mat.anio_lectivo_id
+WHERE al.activo          = TRUE
+  AND mat.estado         = 'ACTIVO'
+  AND e.estado           = 'ACTIVO';
+
+COMMENT ON VIEW vw_matriculas_anio_activo IS 'Estudiantes activos con su sección asignada en el año lectivo activo. Fuente canónica para consultas de sección actual.';
