@@ -184,7 +184,7 @@ FROM vw_rendimiento_periodo_activo
 WHERE promedio_general < 2.5
 ORDER BY promedio_general ASC;
 
-COMMENT ON VIEW vw_estudiantes_en_riesgo IS 'Estudiantes con promedio < 2.5 en el período activo, ordenados por riesgo descendente.';
+COMMENT ON VIEW vw_estudiantes_en_riesgo IS 'Estudiantes con promedio < 2.5 en el período activo. Ordenados por promedio ASC (el más bajo = mayor riesgo primero).';
 
 
 -- ============================================================
@@ -226,7 +226,10 @@ ORDER BY
     END,
     a.fecha_generacion DESC;
 
-COMMENT ON VIEW vw_alertas_activas IS 'Alertas en estado ACTIVA ordenadas por severidad y fecha.';
+COMMENT ON VIEW vw_alertas_activas IS
+    'Alertas en estado ACTIVA ordenadas por severidad y fecha. '
+    'Usa INNER JOIN con matriculas: alertas sin matrícula registrada para ese año lectivo '
+    'no aparecen en esta vista. Usar vw_historial_por_dimension para consultas históricas.';
 
 
 -- ============================================================

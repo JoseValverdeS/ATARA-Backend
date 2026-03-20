@@ -352,16 +352,6 @@ COMMENT ON COLUMN estudiantes.estado         IS 'Estado global del estudiante. T
 --
 --  Relaciona cada estudiante con la sección que le corresponde
 --  en un año lectivo específico.
---
---  Regla de negocio principal:
---    UNIQUE (estudiante_id, anio_lectivo_id) garantiza que un
---    estudiante no puede estar en dos secciones distintas
---    dentro del mismo año lectivo.
---
---  anio_lectivo_id es redundante con secciones.anio_lectivo_id
---  pero se incluye aquí de forma deliberada para poder aplicar
---  la restricción de unicidad directamente en esta tabla,
---  siguiendo el mismo patrón que evaluaciones.seccion_id.
 -- ============================================================
 -- Tabla que registra en qué sección estuvo matriculado un estudiante en cada año lectivo.
 CREATE TABLE matriculas (
