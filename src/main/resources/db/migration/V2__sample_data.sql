@@ -71,29 +71,18 @@ INSERT INTO periodos (anio_lectivo_id, nombre, numero_periodo, fecha_inicio, fec
 -- ============================================================
 -- 7. USUARIOS -- DATOS FLEXIBLES
 --
--- ACCIÓN REQUERIDA antes de probar autenticación:
---   Los hashes de abajo tienen formato BCrypt válido (60 chars)
---   pero son marcadores de posición — Spring Security retornará
---   false (contraseña incorrecta) en lugar de lanzar excepción.
+-- Contraseña inicial para todos: Admin1234!
+-- Hash BCrypt cost=10 generado con BCryptPasswordEncoder(10).
 --
---   Para generar hashes reales de "Password123!" ejecutar una vez:
---     BCryptPasswordEncoder enc = new BCryptPasswordEncoder(12);
---     System.out.println(enc.encode("Password123!"));
---
---   Luego actualizar con:
---     UPDATE usuarios SET password = '<hash_generado>'
---     WHERE correo IN (
---         'admin@atara.mep.go.cr',
---         'mgarcia@atara.mep.go.cr',
---         'jperez@atara.mep.go.cr',
---         'avargas@atara.mep.go.cr'
---     );
+-- Para cambiar en producción, generar nuevo hash y hacer UPDATE:
+--   UPDATE usuarios SET password = '<nuevo_hash>'
+--   WHERE correo = 'admin@atara.mep.go.cr';
 -- ============================================================
 INSERT INTO usuarios (nombre, apellidos, correo, password, rol_id) VALUES
-('Carlos',  'Rodríguez Mora',   'admin@atara.mep.go.cr',     '$2a$12$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 1),
-('María',   'García Ulate',     'mgarcia@atara.mep.go.cr',   '$2a$12$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 2),
-('Juan',    'Pérez Brenes',     'jperez@atara.mep.go.cr',    '$2a$12$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 3),
-('Andrea',  'Vargas Solano',    'avargas@atara.mep.go.cr',   '$2a$12$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 2);
+('Carlos',  'Rodríguez Mora',   'admin@atara.mep.go.cr',     '$2a$10$F1U30x64ierJnoOw7Dx8MuaqkbgIVzfdrZ38.uQRGz24uivyd96dm', 1),
+('María',   'García Ulate',     'mgarcia@atara.mep.go.cr',   '$2a$10$F1U30x64ierJnoOw7Dx8MuaqkbgIVzfdrZ38.uQRGz24uivyd96dm', 2),
+('Juan',    'Pérez Brenes',     'jperez@atara.mep.go.cr',    '$2a$10$F1U30x64ierJnoOw7Dx8MuaqkbgIVzfdrZ38.uQRGz24uivyd96dm', 3),
+('Andrea',  'Vargas Solano',    'avargas@atara.mep.go.cr',   '$2a$10$F1U30x64ierJnoOw7Dx8MuaqkbgIVzfdrZ38.uQRGz24uivyd96dm', 2);
 
 -- ============================================================
 -- 8. SECCIONES -- DATOS FLEXIBLES
@@ -150,17 +139,23 @@ INSERT INTO materias (nombre, descripcion) VALUES
 ('Educación Física',   'Desarrollo motriz, deporte y salud');
 
 -- ============================================================
--- 12. CONTENIDOS (sample: 2 por materia relevante) -- DATOS FLEXIBLES
+-- 12. CONTENIDOS -- DATOS FLEXIBLES
 -- ============================================================
 INSERT INTO contenidos (nombre, descripcion, materia_id) VALUES
--- Matemáticas (materia_id = 1)
-('Operaciones básicas',        'Suma, resta, multiplicación y división',               1),
-('Resolución de problemas',    'Aplicación de operaciones en contextos cotidianos',    1),
--- Español (materia_id = 2)
-('Comprensión lectora',        'Lectura e interpretación de textos',                   2),
-('Expresión escrita',          'Producción de textos cortos y estructurados',          2),
--- Ciencias (materia_id = 3)
-('El ser vivo y su entorno',   'Ecosistemas, seres vivos y adaptaciones',              3);
+-- Matemáticas (materia_id = 1)  → id 1, 2
+('Operaciones básicas',              'Suma, resta, multiplicación y división',               1),
+('Resolución de problemas',          'Aplicación de operaciones en contextos cotidianos',    1),
+-- Español (materia_id = 2)         → id 3, 4
+('Comprensión lectora',              'Lectura e interpretación de textos',                   2),
+('Expresión escrita',                'Producción de textos cortos y estructurados',          2),
+-- Ciencias (materia_id = 3)        → id 5
+('El ser vivo y su entorno',         'Ecosistemas, seres vivos y adaptaciones',              3),
+-- Estudios Sociales (materia_id=4) → id 6, 7
+('Historia y cultura costarricense', 'Historia patria, símbolos nacionales y costumbres',   4),
+('Geografía y espacio natural',      'Provincias, regiones y características del territorio',4),
+-- Educación Física (materia_id=5)  → id 8, 9
+('Habilidades motrices básicas',     'Locomoción, manipulación y equilibrio corporal',      5),
+('Deporte y vida activa',            'Juegos deportivos, reglas y hábitos de salud',        5);
 
 -- ============================================================
 -- 13. DIMENSIONES DE EVALUACIÓN -- DATOS FIJOS
@@ -176,31 +171,67 @@ INSERT INTO dimensiones_evaluacion (nombre, descripcion, peso) VALUES
 -- 14. CRITERIOS / INDICADORES -- DATOS FLEXIBLES
 -- ============================================================
 INSERT INTO criterios_indicadores (nombre, descripcion, contenido_id, dimension_id, peso) VALUES
--- Contenido: Operaciones básicas (id=1) → Rendimiento Académico (id=1)
+-- Contenido: Operaciones básicas (id=1) → Rendimiento Académico (id=1)   → criterio id 1
 ('Dominio de la suma y resta',
-    'Resuelve operaciones de suma y resta con precisión',    1, 1, 1.0),
+    'Resuelve operaciones de suma y resta con precisión',            1, 1, 1.0),
+-- Contenido: Operaciones básicas (id=1) → Rendimiento Académico (id=1)   → criterio id 2
 ('Dominio de la multiplicación y división',
-    'Resuelve operaciones de multiplicación y división',     1, 1, 1.0),
+    'Resuelve operaciones de multiplicación y división',             1, 1, 1.0),
 
--- Contenido: Comprensión lectora (id=3) → Rendimiento Académico (id=1)
+-- Contenido: Comprensión lectora (id=3) → Rendimiento Académico (id=1)   → criterio id 3
 ('Comprensión de textos narrativos',
-    'Identifica personajes, lugar y secuencia en un relato', 3, 1, 1.0),
-
--- Contenido: Comprensión lectora (id=3) → Participación (id=2)
+    'Identifica personajes, lugar y secuencia en un relato',         3, 1, 1.0),
+-- Contenido: Comprensión lectora (id=3) → Participación (id=2)            → criterio id 4
 ('Participación en discusión de lectura',
-    'Interviene con aportes durante la discusión del texto', 3, 2, 1.0),
+    'Interviene con aportes durante la discusión del texto',         3, 2, 1.0),
 
--- Contenido: Operaciones básicas (id=1) → Hábitos de Estudio (id=3)
+-- Contenido: Operaciones básicas (id=1) → Hábitos de Estudio (id=3)      → criterio id 5
 ('Entrega puntual de tareas de Matemáticas',
-    'Cumple con las asignaciones en los plazos establecidos', 1, 3, 1.0),
+    'Cumple con las asignaciones en los plazos establecidos',        1, 3, 1.0),
 
--- Contenido: El ser vivo (id=5) → Factores Socioemocionales (id=4)
+-- Contenido: El ser vivo (id=5) → Factores Socioemocionales (id=4)       → criterio id 6
 ('Trabajo colaborativo en Ciencias',
-    'Coopera activamente en prácticas y proyectos grupales', 5, 4, 1.0),
+    'Coopera activamente en prácticas y proyectos grupales',         5, 4, 1.0),
 
--- Contenido: Operaciones básicas (id=1) → Asistencia (id=5)
+-- Contenido: Operaciones básicas (id=1) → Asistencia (id=5)              → criterio id 7
 ('Asistencia a lecciones de Matemáticas',
-    'Regularidad en la asistencia a las lecciones',          1, 5, 1.0);
+    'Regularidad en la asistencia a las lecciones',                  1, 5, 1.0),
+
+-- ── Criterios para contenidos sin cobertura previa ──────────────────────
+
+-- Contenido: Resolución de problemas (id=2) → Rendimiento Académico (id=1) → criterio id 8
+('Resolución de situaciones matemáticas',
+    'Aplica operaciones para resolver problemas en contextos reales', 2, 1, 1.0),
+
+-- Contenido: Expresión escrita (id=4) → Rendimiento Académico (id=1)     → criterio id 9
+('Producción de textos escritos',
+    'Redacta textos cortos con estructura, coherencia y ortografía',  4, 1, 1.0),
+
+-- ── Estudios Sociales ────────────────────────────────────────────────────
+
+-- Contenido: Historia y cultura costarricense (id=6) → Rendimiento (id=1) → criterio id 10
+('Conocimiento de la historia y símbolos patrios',
+    'Identifica fechas, personajes y símbolos de la historia nacional',6, 1, 1.0),
+-- Contenido: Historia y cultura costarricense (id=6) → Participación (id=2) → criterio id 11
+('Participación en actividades cívicas',
+    'Se involucra activamente en conmemoraciones y actos cívicos',    6, 2, 1.0),
+
+-- Contenido: Geografía y espacio natural (id=7) → Rendimiento (id=1)     → criterio id 12
+('Conocimiento del territorio costarricense',
+    'Ubica provincias, cantones y regiones en el mapa nacional',      7, 1, 1.0),
+
+-- ── Educación Física ─────────────────────────────────────────────────────
+
+-- Contenido: Habilidades motrices básicas (id=8) → Rendimiento (id=1)    → criterio id 13
+('Dominio de habilidades de locomoción',
+    'Ejecuta correctamente correr, saltar, rodar y trepar',           8, 1, 1.0),
+-- Contenido: Habilidades motrices básicas (id=8) → Factores Socioemocionales (id=4) → criterio id 14
+('Integración en actividades físicas grupales',
+    'Colabora con pares de forma respetuosa en juegos y ejercicios',  8, 4, 1.0),
+
+-- Contenido: Deporte y vida activa (id=9) → Hábitos de Estudio (id=3)    → criterio id 15
+('Respeto a reglas y normas deportivas',
+    'Acata las reglas del juego y acepta resultados con deportividad', 9, 3, 1.0);
 
 -- ============================================================
 -- 15. CONFIGURACIÓN DE ALERTAS (motor de reglas) -- DATOS FLEXIBLES
