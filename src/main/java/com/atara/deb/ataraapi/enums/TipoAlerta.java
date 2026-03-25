@@ -1,4 +1,7 @@
 package com.atara.deb.ataraapi.enums;
 
-public class TipoAlerta {
+public enum TipoAlerta {
+    RENDIMIENTO,
+    ASISTENCIA,
+    CONDUCTA
 }

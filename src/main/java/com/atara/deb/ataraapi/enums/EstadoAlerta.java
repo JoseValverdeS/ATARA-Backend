@@ -1,4 +1,6 @@
 package com.atara.deb.ataraapi.enums;
 
-public class EstadoAlerta {
+public enum EstadoAlerta {
+    ACTIVA,
+    RESUELTA
 }

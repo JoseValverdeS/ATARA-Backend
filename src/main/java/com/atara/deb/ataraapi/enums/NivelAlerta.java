@@ -1,4 +1,7 @@
 package com.atara.deb.ataraapi.enums;
 
-public class NivelAlerta {
+public enum NivelAlerta {
+    ALTA,
+    MEDIA,
+    BAJA
 }
