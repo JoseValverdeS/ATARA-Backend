@@ -16,7 +16,7 @@ public class CentroEducativo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "nombre", nullable = false, length = 200, unique = true)
     private String nombre;

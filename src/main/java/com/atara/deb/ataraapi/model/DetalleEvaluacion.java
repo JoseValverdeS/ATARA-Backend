@@ -22,7 +22,7 @@ public class DetalleEvaluacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     // CASCADE ALL: si se borra la evaluación, se borran los detalles
     @ManyToOne(fetch = FetchType.LAZY)

@@ -22,7 +22,7 @@ public class Seccion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     // 'A', 'B', 'C', … — parte del UNIQUE junto con nivel, centro y año
     @Column(name = "nombre", nullable = false, length = 10)

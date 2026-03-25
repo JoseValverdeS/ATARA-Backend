@@ -16,7 +16,7 @@ public class TokenRefresh {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     // CASCADE DELETE: si se elimina el usuario, sus tokens se eliminan
     @ManyToOne(fetch = FetchType.LAZY)

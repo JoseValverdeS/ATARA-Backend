@@ -23,7 +23,7 @@ public class CriterioIndicador {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "nombre", nullable = false, length = 200)
     private String nombre;

@@ -17,7 +17,7 @@ public class AnioLectivo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     // SMALLINT — entre 2000 y 2200; UNIQUE garantizado por uq_anio_lectivo
     @Column(name = "anio", nullable = false, unique = true)

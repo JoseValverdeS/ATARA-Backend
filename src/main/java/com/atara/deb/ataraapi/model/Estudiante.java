@@ -19,7 +19,7 @@ public class Estudiante {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     // Código institucional o cédula — UNIQUE NOT NULL
     @Column(name = "identificacion", nullable = false, length = 25, unique = true)

@@ -17,7 +17,7 @@ public class DimensionEvaluacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "nombre", nullable = false, length = 150, unique = true)
     private String nombre;

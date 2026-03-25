@@ -21,7 +21,7 @@ public class RegistroAuditoria {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     // NULL si la acción fue del sistema; SET NULL si el usuario es eliminado
     @ManyToOne(fetch = FetchType.LAZY)

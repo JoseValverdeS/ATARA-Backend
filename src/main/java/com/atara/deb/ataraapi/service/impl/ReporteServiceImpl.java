@@ -9,6 +9,6 @@ public class ReporteServiceImpl implements ReporteService {
 
     @Override
     public ReporteEstudianteDto getStudentReport(Long studentId, Long subjectId, Long periodId) {
-        return new ReporteEstudianteDto();
+        throw new UnsupportedOperationException("Generación de reportes no implementada aún.");
     }
 }

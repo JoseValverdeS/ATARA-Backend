@@ -16,7 +16,7 @@ public class Nivel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     // SMALLINT — grado entre 1 y 6
     @Column(name = "numero_grado", nullable = false, unique = true)
