@@ -1,6 +1,6 @@
 package com.atara.deb.ataraapi.repository;
 
-import com.atara.deb.ataraapi.model.entity.Evaluacion;
+import com.atara.deb.ataraapi.model.Evaluacion;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
