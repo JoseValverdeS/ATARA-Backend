@@ -1,0 +1,58 @@
+package com.atara.deb.ataraapi.dto.estudiante;
+
+import com.atara.deb.ataraapi.model.enums.Genero;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
+
+public class EstudianteRequestDto {
+
+    @NotBlank
+    private String identificacion;
+
+    @NotBlank
+    private String nombre;
+
+    @NotBlank
+    private String apellido1;
+
+    private String apellido2;
+
+    private LocalDate fechaNacimiento;
+
+    private Genero genero;
+
+    private String nombreAcudiente;
+
+    private String telefonoAcudiente;
+
+    private String correoAcudiente;
+
+    public String getIdentificacion() { return identificacion; }
+    public void setIdentificacion(String identificacion) { this.identificacion = identificacion; }
+
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public String getApellido1() { return apellido1; }
+    public void setApellido1(String apellido1) { this.apellido1 = apellido1; }
+
+    public String getApellido2() { return apellido2; }
+    public void setApellido2(String apellido2) { this.apellido2 = apellido2; }
+
+    public LocalDate getFechaNacimiento() { return fechaNacimiento; }
+    public void setFechaNacimiento(LocalDate fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
+
+    public Genero getGenero() { return genero; }
+    public void setGenero(Genero genero) { this.genero = genero; }
+
+    public String getNombreAcudiente() { return nombreAcudiente; }
+    public void setNombreAcudiente(String nombreAcudiente) { this.nombreAcudiente = nombreAcudiente; }
+
+    public String getTelefonoAcudiente() { return telefonoAcudiente; }
+    public void setTelefonoAcudiente(String telefonoAcudiente) { this.telefonoAcudiente = telefonoAcudiente; }
+
+    public String getCorreoAcudiente() { return correoAcudiente; }
+    public void setCorreoAcudiente(String correoAcudiente) { this.correoAcudiente = correoAcudiente; }
+}
