@@ -1,0 +1,2 @@
+# Modelos de idioma Tesseract — binarios grandes, no van en el repo
+*.traineddata

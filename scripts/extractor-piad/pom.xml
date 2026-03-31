@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Módulo independiente de extracción de PDF — versión OCR.
+        Compatible con Java 17 y el ecosistema del proyecto ATARA-Backend.
+
+        El PDF de SIGCE (Lista PIAD) tiene el texto convertido a trazados vectoriales,
+        por lo que se necesita OCR. El flujo es:
+          PDF → PDFBox (render imagen) → Tesseract (OCR) → regex parser → JSON / CSV / Excel
+
+        Futura integración como @Service de Spring Boot:
+          - extraerTabla(InputStream) recibe un MultipartFile y retorna List<EstudiantePIAD>
+          - Las dependencias (pdfbox, jackson, tess4j, poi) son todas compatibles con Spring Boot
+          - En Docker de producción: añadir al Dockerfile:
+              RUN apt-get install -y tesseract-ocr tesseract-ocr-spa
+
+        Uso local:
+          cd scripts/extractor-piad
+          mvn compile exec:java                     ← lee "Lista PIAD.pdf" en la raíz del proyecto
+          mvn compile exec:java -Dexec.args="ruta"  ← ruta personalizada
+    -->
+
+    <groupId>com.atara.tools</groupId>
+    <artifactId>extractor-piad</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>ATARA — Extractor PIAD</name>
+    <description>Extrae la tabla de estudiantes del PDF Lista PIAD del sistema SIGCE (MEP Costa Rica) mediante OCR</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Versiones alineadas con Spring Boot 4.x / compatible con ATARA-Backend -->
+        <pdfbox.version>3.0.3</pdfbox.version>
+        <jackson.version>2.18.2</jackson.version>
+        <tess4j.version>5.11.0</tess4j.version>
+        <poi.version>5.2.5</poi.version>
+    </properties>
+
+    <dependencies>
+        <!-- Apache PDFBox — renderizado del PDF a imagen para OCR -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>${pdfbox.version}</version>
+        </dependency>
+
+        <!-- Jackson — serialización JSON (misma lib que usa Spring Boot internamente) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!--
+            Tess4J — wrapper Java para Tesseract OCR
+            · Windows: incluye los DLL de Tesseract automáticamente en el JAR (no requiere instalación)
+            · Linux/Docker: requiere "apt-get install tesseract-ocr tesseract-ocr-spa"
+            · Tessdata (modelos de idioma): ver scripts/extractor-piad/tessdata/INSTRUCCIONES.md
+        -->
+        <dependency>
+            <groupId>net.sourceforge.tess4j</groupId>
+            <artifactId>tess4j</artifactId>
+            <version>${tess4j.version}</version>
+        </dependency>
+
+        <!--
+            Apache POI — generación de Excel (.xlsx)
+            Misma familia de librerías usada en el ecosistema Spring Boot.
+            Al integrar en el backend, usar poi-ooxml que ya estará disponible.
+        -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poi.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <!-- Usar "release" en lugar de source/target: configura el JDK correcto automáticamente -->
+                    <release>${java.version}</release>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <mainClass>com.atara.tools.ExtractorPIAD</mainClass>
+                    <!-- El CWD apunta a la raíz del proyecto para leer el PDF y escribir output/ -->
+                    <workingDirectory>${project.basedir}/../..</workingDirectory>
+                    <systemProperties>
+                        <!--
+                            tessdata.parent = carpeta que CONTIENE la subcarpeta tessdata/
+                            El extractor buscará: ${tessdata.parent}/tessdata/spa.traineddata
+                        -->
+                        <systemProperty>
+                            <!-- tessdata.dir = carpeta que contiene directamente los archivos .traineddata -->
+                            <key>tessdata.dir</key>
+                            <value>${project.basedir}/tessdata</value>
+                        </systemProperty>
+                        <!-- Necesario para que POI renderice fuentes correctamente en servidor headless -->
+                        <systemProperty>
+                            <key>java.awt.headless</key>
+                            <value>true</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

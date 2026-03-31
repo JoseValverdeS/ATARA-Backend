@@ -1,0 +1,42 @@
+[p1 y=273-318 h=45 psm=6] | me | | Usuario. FrELO4UZ! e MINISTERIO DE GOBIERNO Parfil- Narcanta
+[p1 y=334-364 h=30 psm=7] ED Y EDUCACION PUBLICA | DE COSTA RICA Fecha: 26/3/2026
+[p1 y=380-426 h=46 psm=6] — SIGCE > REPUBLICA DE GUATEMALA Avuda | Mapa del sitio | Cerrar sesión
+[p1 y=501-523 h=22 psm=7] 4 Principal Seguridad LÉxiExpedientes lui Reportes
+[p1 y=625-657 h=32 psm=6] 
+[p1 y=739-748 h=9 psm=7] 
+[p1 y=798-815 h=17 psm=7] identificacion + Pagina de inicIO + EXpediente + Lista de estudiantes
+[p1 y=916-958 h=42 psm=6] Lista de estudiantes
+[p1 y=1022-1049 h=27 psm=7] kn. 2026 Y Niveles: Primero Grupos: 5 Y Mostrar: — (O) sólo activos UV Todos [ver estadística actual)
+[p1 y=1110-1133 h=23 psm=7] ESTADISTICA grupo: Inicial(26): H=13 M=13, provenientes(1) H=1 M=0
+[p1 y=1146-1169 h=23 psm=7] SALIDOS(0) por traslado (0): H=0 M=0 por deserción (0): H=0 M=0 Efectiva(27): H=14 M=13
+[p1 y=1247-1263 h=16 psm=7] Ceaula rri mer apellido veaundo apellido Nombre a Nivel Grupo a a
+[p1 y=1311-1333 h=22 psm=7] ] 4-0332-0186 ALFARO MOLINA ISABELLA Sin adecuación Primero 5 9/2/2026
+[p1 y=1375-1397 h=22 psm=7] 2 2-1062-0937 CHACON CORTES LIAM SAUL Sin adecuación Primero 5 9/2/2026
+[p1 y=1439-1461 h=22 psm=7] 3 1-2337-0925 CHACON MONTENEGRO JULIAN DAVID Sin adecuación — Primero 5 9/2/2026
+[p1 y=1503-1525 h=22 psm=7] 4 2-1055-0698 CHAVARRIA ALVARADO ELLIOT CALEB Sin adecuación Primero 5 9/2/2026
+[p1 y=1567-1589 h=22 psm=7] 5 2-1054-0179 CHAVES QUINTERO ISMAEL Sin adecuación Primero 5 9/2/2026
+[p1 y=1631-1653 h=22 psm=7] 6 2-1058-0065 ENRIQUEZ LEON SAMARA NAZARETH Sin adecuación Primero 5 9/2/2026
+[p1 y=1695-1717 h=22 psm=7] 7 Ppbl 2-1042-0979 ÑGALEANO LAZO AMIR Sin adecuación — Primero 5 3/3/2026
+[p1 y=1759-1781 h=22 psm=7] 8 2-1054-0746 € GOMEZ RODRIGUEZ GABRIEL Sin adecuación Primero 5 9/2/2026
+[p1 y=1823-1845 h=22 psm=7] 9 1-2312-0451 JIMENEZ SANCHEZ VALERIN DANICHA — Sin adecuación — Primero 5 19/2/2026
+[p1 y=1892-1915 h=23 psm=7] 10 2-1039-0433 LEMOS VEGA IET ARIRRDA Sin adecuación Primero 5 12/2/2026
+[p1 y=1962-1984 h=22 psm=7] 11 2-1056-0370 LOPEZ IGLESIAS LUIS ANGEL Sin adecuación Primero 5 9/2/2026
+[p1 y=2026-2048 h=22 psm=7] 12 2-1048-0348 LORIA ESPINOZA LUCAS MATEO Sin adecuación Primero 5 12/2/2026
+[p1 y=2090-2113 h=23 psm=7] 13 2-1057-0436 MENDOZA HERNANDEZ NEFERETH ARISBETH Sin adecuación Primero 5 9/2/2026
+[p1 y=2154-2176 h=22 psm=7] 14 5-0545-0871 MERIDA RODRIGUEZ LAKSHMI VALENTINA Sin adecuación — Primero 5 9/2/2026
+[p1 y=2218-2240 h=22 psm=7] 15 2-1061-0492 MONTERO CASAL BENJAMIN Sin adecuación — Primero 5 9/2/2026
+[p1 y=2282-2304 h=22 psm=7] 16 2-1054-0447 MORA GONZALEZ ISAAC JOEL Sin adecuación Primero 5 9/2/2026
+[p1 y=2346-2368 h=22 psm=7] 17 2-1063-0015 MORENO TREMINIO YERLING SOFIA Sin adecuación Primero 5 9/2/2026
+[p1 y=2415-2438 h=23 psm=7] 18 2-1054-0858 OVIEDO MARCIA nn Sin adecuación Primero 5 9/2/2026
+[p1 y=2485-2507 h=22 psm=7] 19 sm YR2024-35171 PESANTEZ ASTUDILLO MÍA RAFAELA Sin adecuación Primero 5 1/1/1
+[p1 y=2549-2572 h=23 psm=7] 20 2-1058-0739 PINEDA MORAGA LISBETH ANGELICA — Sin adecuación Primero 5 9/2/2026
+[p1 y=2613-2636 h=23 psm=7] 21 2-1054-0542 REINOSO JIMENEZ JAZLYN Sin adecuación Primero 5 9/2/2026
+[p1 y=2677-2700 h=23 psm=7] 22 1-2337-0650 ROJAS ELIZONDO LUCIANO Sin adecuación Primero 5 9/2/2026
+[p1 y=2741-2764 h=23 psm=7] 23 2-1053-0917 SANCHEZ PORRAS SOFIA Sin adecuación Primero 5 9/2/2026
+[p1 y=2805-2827 h=22 psm=7] 24 2-1052-0555 SOLIS CHAVARRIA MATIAS Sin adecuación Primero 5 9/2/2026
+[p1 y=2869-2892 h=23 psm=7] 25 2-1057-0756 SUAREZ ZULUAGA JEANCARLO NEYEF Sin adecuación Primero 5 9/2/2026
+[p1 y=2933-2956 h=23 psm=7] 26 2-1056-0243 VARGAS PICADO ANDRES Sin adecuación Primero 5 9/2/2026
+[p1 y=2997-3020 h=23 psm=7] 27 2-1054-0587 VEGA MORAGA ALANNA Sin adecuación Primero 5 9/2/2026
+[p1 y=3201-3231 h=30 psm=7] Imprimir lista Imprimir carnes
+[p1 y=3266-3275 h=9 psm=7] TÉ .”_—oÑÉ _——————].;—;;—.. ————————.—;;—;—;,”;—-—“Í; DM hhhhol%nL]€SNoN—o]——————;—;———;——[o];];];.;,];];T—rÉ¡——;—TL——Í;—],.],;;;—;—;]o]];,].].];;]ooD];;T]]—];];——]o];;;—í;];]T];];—]———];];];——;;]];].]“——,—]í—;oo];;;];;;——;—————;———]——;—]——;—];—;;—”_;—.;L;—].]”—”—-]——l.;—].]—]—_—]—;—;”o];]——;]D—;”;—;—;—];;]];];]”-——l;o—]—].—.-—;—.l]eo];].—zo——]—]—]—!;];—]”]—].—é——;oo];];];]];];];];]]];];oT]zzT;z;o],]I—]]”].-]—”;]——]—]”.—;—]—;_]”.-—;l;;—]—;];—]”—.—]-;—.—O];];DÍT;—é—].——]————;—;———]L;;oo];,;;í;;]———Í;;;];;—;”—————;]——;].—]];;—;l];;—;];—;——;;——;]—;]];;;———o;———;]——;;;]; ;.———]—]];—;;]—;;——;—];Ú;—;];];]—;—];—]—;—;——;——;——;—]]];;———]
+[p1 y=3301-3317 h=16 psm=7] 'O Copyrahnt: Ministerio de Educación Fublca ZU?) rrobledaa: MER
