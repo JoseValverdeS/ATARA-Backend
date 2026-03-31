@@ -1,7 +1,44 @@
-# Cambios pendientes — Base de datos
+# Cambios pendientes — Base de datos y funcionalidades
 
-> Estado: **Pendiente de implementar**
-> Prioridad: Media — no bloquea el desarrollo actual
+> Última actualización: 2026-03-31
+
+---
+
+## ✅ Implementado en esta sesión
+
+### Frontend temporal (`temp-frontend/`)
+
+| Función | Archivo | Estado |
+|---|---|---|
+| Importar PIAD (upload PDF → OCR → tabla editable) | `src/pages/importarPiad.js` | ✅ Hecho — "Guardar" deshabilitado hasta tener el campo en DB |
+| Mapa de calor pedagógico | `src/pages/visualizaciones.js` | ✅ Hecho |
+| Alertas tempranas (4 tipos) | `src/pages/alertasTempranas.js` | ✅ Hecho |
+| Clic en alerta → navega a Visualizaciones con estudiante pre-filtrado | `alertasTempranas.js` + `main.js` + `visualizaciones.js` | ✅ Hecho |
+| Reportes con múltiples tipos de gráfico (Chart.js) | `src/pages/reportes.js` | ✅ Hecho |
+| Diseño responsive para móvil | `src/style.css` | ✅ Hecho |
+| Nomenclatura Ciclo I / II en lugar de Trimestre I/II/III | `src/pedagogicaData.js` y páginas | ✅ Hecho |
+
+### Backend
+
+| Función | Archivo | Estado |
+|---|---|---|
+| Extracción OCR de PDF PIAD | `service/impl/PiadServiceImpl.java` | ✅ Hecho |
+| Endpoint `POST /api/piad/extraer` | `controller/PiadController.java` | ✅ Hecho |
+| DTO de estudiante PIAD | `dto/piad/EstudiantePIADDto.java` | ✅ Hecho |
+| Dependencias PDFBox 3.0.3 + tess4j 5.11.0 | `pom.xml` | ✅ Hecho |
+| Configuración ruta tessdata | `application.properties` | ✅ Hecho |
+
+---
+
+## ⏳ Pendiente de implementar
+
+### Pendiente 1 — Guardar estudiantes PIAD en el sistema
+
+La página de Importar PIAD ya extrae y muestra los datos en una tabla editable, pero el botón "Guardar en sistema" está deshabilitado. Para activarlo se necesita:
+
+1. **Cambio en DB** (ver Cambio 1 abajo) — agregar `tipo_adecuacion` a `estudiantes`
+2. **Endpoint de guardado** — `POST /api/piad/importar` que reciba la lista editada y cree/actualice los registros en `estudiantes` y `matriculas`
+3. **Frontend** — habilitar el botón y llamar al nuevo endpoint
 
 ---
 
@@ -20,7 +57,7 @@ Al analizar los datos que extrae el **Extractor PIAD** (`scripts/extractor-piad/
 
 ---
 
-## Cambio 1 — Agregar `tipo_adecuacion` a `estudiantes` ⭐ Prioritario
+## Cambio 1 — Agregar `tipo_adecuacion` a `estudiantes` ⭐ Prioritario (bloquea guardar PIAD)
 
 **Problema:** El campo `tipoAdecuacion` viene del PIAD y no tiene columna en la DB. Es crítico para ATARA porque los estudiantes con adecuación significativa tienen criterios de evaluación distintos y umbrales de alerta diferentes. Sin este dato el sistema puede generar falsos positivos.
 
