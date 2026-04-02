@@ -8,8 +8,6 @@ import com.atara.deb.ataraapi.service.AnioLectivoService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -56,37 +54,24 @@ public class AnioLectivoServiceImpl implements AnioLectivoService {
                 "Ya existe un año lectivo para el año: " + anioLectivo.getAnio()
             );
         }
-        if (anioLectivo.getFechaInicio().isAfter(anioLectivo.getFechaFin())) {
-            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin.");
-        }
         if (anioLectivo.getActivo() == null) {
             anioLectivo.setActivo(false);
         }
 
         AnioLectivo guardado = anioLectivoRepository.save(anioLectivo);
 
-        // Generar automáticamente los 3 trimestres dividiendo el rango en partes iguales
+        // Generar automáticamente los 3 trimestres
         crearTrimestres(guardado);
 
         return guardado;
     }
 
     private void crearTrimestres(AnioLectivo anio) {
-        LocalDate inicio = anio.getFechaInicio();
-        LocalDate fin    = anio.getFechaFin();
-        long totalDias   = ChronoUnit.DAYS.between(inicio, fin);
-        long tercio      = totalDias / 3;
-
         for (int i = 0; i < 3; i++) {
-            LocalDate fechaIni = inicio.plusDays(i * tercio);
-            LocalDate fechaFin = (i == 2) ? fin : inicio.plusDays((i + 1) * tercio).minusDays(1);
-
             periodoRepository.save(Periodo.builder()
                     .anioLectivo(anio)
                     .nombre(NOMBRES_TRIMESTRE[i])
                     .numeroPeriodo((short) (i + 1))
-                    .fechaInicio(fechaIni)
-                    .fechaFin(fechaFin)
                     .activo(i == 0)   // el primer trimestre queda activo
                     .build());
         }
@@ -114,12 +99,10 @@ public class AnioLectivoServiceImpl implements AnioLectivoService {
     @Override
     public AnioLectivo actualizar(Long id, AnioLectivoRequestDto dto) {
         AnioLectivo anio = buscarPorId(id);
-        if (dto.getFechaInicio().isAfter(dto.getFechaFin())) {
-            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin.");
+        if (!anio.getAnio().equals(dto.getAnio()) && anioLectivoRepository.existsByAnio(dto.getAnio())) {
+            throw new IllegalArgumentException("Ya existe un año lectivo para el año: " + dto.getAnio());
         }
         anio.setAnio(dto.getAnio());
-        anio.setFechaInicio(dto.getFechaInicio());
-        anio.setFechaFin(dto.getFechaFin());
         return anioLectivoRepository.save(anio);
     }
 

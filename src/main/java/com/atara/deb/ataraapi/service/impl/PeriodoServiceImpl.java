@@ -71,9 +71,6 @@ public class PeriodoServiceImpl implements PeriodoService {
         }
         AnioLectivo anio = anioLectivoRepository.findById(dto.getAnioLectivoId())
                 .orElseThrow(() -> new NoSuchElementException("Año lectivo no encontrado: " + dto.getAnioLectivoId()));
-        if (dto.getFechaInicio().isAfter(dto.getFechaFin())) {
-            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin.");
-        }
 
         // numeroPeriodo = máx existente + 1
         List<Periodo> existentes = periodoRepository.findByAnioLectivoId(dto.getAnioLectivoId());
@@ -81,12 +78,15 @@ public class PeriodoServiceImpl implements PeriodoService {
                 .mapToInt(p -> p.getNumeroPeriodo())
                 .max().orElse(0) + 1);
 
+        if (numero > 6) {
+            throw new IllegalArgumentException(
+                "No se pueden crear más de 6 periodos en un año lectivo.");
+        }
+
         Periodo periodo = Periodo.builder()
                 .anioLectivo(anio)
                 .nombre(dto.getNombre())
                 .numeroPeriodo(numero)
-                .fechaInicio(dto.getFechaInicio())
-                .fechaFin(dto.getFechaFin())
                 .activo(false)
                 .build();
 
@@ -98,12 +98,7 @@ public class PeriodoServiceImpl implements PeriodoService {
     public PeriodoResponseDto actualizar(Long id, PeriodoRequestDto dto) {
         Periodo periodo = periodoRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Periodo no encontrado: " + id));
-        if (dto.getFechaInicio().isAfter(dto.getFechaFin())) {
-            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin.");
-        }
         periodo.setNombre(dto.getNombre());
-        periodo.setFechaInicio(dto.getFechaInicio());
-        periodo.setFechaFin(dto.getFechaFin());
         return toDto(periodoRepository.save(periodo));
     }
 
@@ -117,11 +112,17 @@ public class PeriodoServiceImpl implements PeriodoService {
                 "No se puede eliminar el periodo activo. " +
                 "Activa otro periodo antes de eliminar éste.");
         }
+        boolean tieneEvaluaciones = !evaluacionRepository.findByPeriodoId(periodoId).isEmpty()
+                || !evaluacionSaberRepository.findByPeriodoId(periodoId).isEmpty();
+        if (tieneEvaluaciones) {
+            throw new IllegalArgumentException(
+                "No se puede eliminar el periodo porque tiene evaluaciones registradas.");
+        }
         // Orden: alertas temáticas → alertas → evaluaciones saber → evaluaciones → periodo
         alertaTematicaRepository.deleteAllByPeriodoId(periodoId);
         alertaRepository.deleteAllByPeriodoId(periodoId);
-        evaluacionSaberRepository.deleteAllByPeriodoId(periodoId); // cascada a detalles
-        evaluacionRepository.deleteAllByPeriodoId(periodoId);      // cascada a detalles
+        evaluacionSaberRepository.deleteAllByPeriodoId(periodoId);
+        evaluacionRepository.deleteAllByPeriodoId(periodoId);
         periodoRepository.deleteById(periodoId);
     }
 
@@ -132,8 +133,6 @@ public class PeriodoServiceImpl implements PeriodoService {
                 .anioLectivoAnio(p.getAnioLectivo().getAnio())
                 .nombre(p.getNombre())
                 .numeroPeriodo(p.getNumeroPeriodo())
-                .fechaInicio(p.getFechaInicio())
-                .fechaFin(p.getFechaFin())
                 .activo(p.getActivo())
                 .build();
     }

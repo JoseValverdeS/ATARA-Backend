@@ -28,8 +28,8 @@ INSERT INTO roles (nombre, descripcion) VALUES
 -- ============================================================
 -- 2. AÑO LECTIVO -- DATOS FLEXIBLES
 -- ============================================================
-INSERT INTO anios_lectivos (anio, fecha_inicio, fecha_fin, activo) VALUES
-(2025, '2025-02-03', '2025-11-28', TRUE);
+INSERT INTO anios_lectivos (anio, activo) VALUES
+(2025, TRUE);
 
 -- ============================================================
 -- 3. NIVELES ACADÉMICOS (catálogo completo 1°–6°) -- DATOS FIJOS
@@ -59,14 +59,12 @@ INSERT INTO centros_educativos (nombre, circuito, direccion_regional, telefono, 
 ('Escuela República de Colombia',  '02',  'DREH San José Norte',   '2233-4455', 'colombia@mep.go.cr');
 
 -- ============================================================
--- 6. PERÍODOS (5 períodos bimensuales en 2025) -- DATOS FLEXIBLES
+-- 6. PERÍODOS (3 trimestres en 2025) -- DATOS FLEXIBLES
 -- ============================================================
-INSERT INTO periodos (anio_lectivo_id, nombre, numero_periodo, fecha_inicio, fecha_fin, activo) VALUES
-(1, 'Período 1 – 2025', 1, '2025-02-03', '2025-03-28', FALSE),
-(1, 'Período 2 – 2025', 2, '2025-03-31', '2025-05-30', TRUE),   -- activo
-(1, 'Período 3 – 2025', 3, '2025-06-02', '2025-07-25', FALSE),
-(1, 'Período 4 – 2025', 4, '2025-07-28', '2025-09-26', FALSE),
-(1, 'Período 5 – 2025', 5, '2025-09-29', '2025-11-28', FALSE);
+INSERT INTO periodos (anio_lectivo_id, nombre, numero_periodo, activo) VALUES
+(1, 'I Trimestre',   1, TRUE),
+(1, 'II Trimestre',  2, FALSE),
+(1, 'III Trimestre', 3, FALSE);
 
 -- ============================================================
 -- 7. USUARIOS -- DATOS FLEXIBLES

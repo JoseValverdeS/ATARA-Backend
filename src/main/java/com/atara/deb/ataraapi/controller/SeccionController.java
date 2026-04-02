@@ -10,6 +10,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+
 import java.util.List;
 
 @RestController
@@ -29,6 +31,12 @@ public class SeccionController {
         return ResponseEntity.ok(seccionService.listarPorAnioLectivo(anioLectivoId));
     }
 
+    /** GET /api/secciones/{id} — obtiene una sección por id. */
+    @GetMapping("/{id}")
+    public ResponseEntity<SeccionResponseDto> obtenerPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(seccionService.buscarPorId(id));
+    }
+
     /** GET /api/secciones/docente/{docenteId} — secciones asignadas a un docente. */
     @GetMapping("/docente/{docenteId}")
     public ResponseEntity<List<SeccionResponseDto>> listarPorDocente(
@@ -39,7 +47,10 @@ public class SeccionController {
     /** POST /api/secciones — crear una nueva sección. */
     @PostMapping
     public ResponseEntity<SeccionResponseDto> crear(@Valid @RequestBody SeccionRequestDto dto) {
-        return ResponseEntity.ok(seccionService.crearSeccion(dto));
+        SeccionResponseDto creada = seccionService.crearSeccion(dto);
+        return ResponseEntity
+                .created(URI.create("/api/secciones/" + creada.getId()))
+                .body(creada);
     }
 
     /** GET /api/secciones/catalogos/niveles — niveles educativos disponibles. */

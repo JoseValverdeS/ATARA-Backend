@@ -75,8 +75,6 @@ public class AnioLectivoController {
     private AnioLectivo toEntity(AnioLectivoRequestDto dto) {
         AnioLectivo a = new AnioLectivo();
         a.setAnio(dto.getAnio());
-        a.setFechaInicio(dto.getFechaInicio());
-        a.setFechaFin(dto.getFechaFin());
         return a;
     }
 
@@ -84,8 +82,6 @@ public class AnioLectivoController {
         AnioLectivoResponseDto dto = new AnioLectivoResponseDto();
         dto.setId(a.getId());
         dto.setAnio(a.getAnio());
-        dto.setFechaInicio(a.getFechaInicio());
-        dto.setFechaFin(a.getFechaFin());
         dto.setActivo(a.getActivo());
         dto.setCreatedAt(a.getCreatedAt());
         dto.setUpdatedAt(a.getUpdatedAt());

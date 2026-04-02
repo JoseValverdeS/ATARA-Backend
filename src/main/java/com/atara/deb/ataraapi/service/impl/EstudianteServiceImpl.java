@@ -95,7 +95,10 @@ public class EstudianteServiceImpl implements EstudianteService {
         existente.setNombreAcudiente(datosActualizados.getNombreAcudiente());
         existente.setTelefonoAcudiente(datosActualizados.getTelefonoAcudiente());
         existente.setCorreoAcudiente(datosActualizados.getCorreoAcudiente());
-        existente.setEstado(datosActualizados.getEstado());
+        // Actualizar estado solo si viene en el request; de lo contrario conservar el actual
+        if (datosActualizados.getEstado() != null) {
+            existente.setEstado(datosActualizados.getEstado());
+        }
 
         return estudianteRepository.save(existente);
     }

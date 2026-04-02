@@ -11,6 +11,7 @@ import java.util.List;
 public interface SeccionService {
     List<SeccionResponseDto> listarPorAnioLectivo(Long anioLectivoId);
     List<SeccionResponseDto> listarPorDocente(Long docenteId);
+    SeccionResponseDto buscarPorId(Long id);
     SeccionResponseDto crearSeccion(SeccionRequestDto dto);
 
     SeccionResponseDto actualizarSeccion(Long id, SeccionRequestDto dto);

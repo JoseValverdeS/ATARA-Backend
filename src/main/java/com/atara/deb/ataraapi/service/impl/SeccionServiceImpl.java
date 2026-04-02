@@ -67,6 +67,13 @@ public class SeccionServiceImpl implements SeccionService {
     }
 
     @Override
+    public SeccionResponseDto buscarPorId(Long id) {
+        Seccion seccion = seccionRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Sección no encontrada con id: " + id));
+        return toDto(seccion);
+    }
+
+    @Override
     @Transactional
     public SeccionResponseDto crearSeccion(SeccionRequestDto dto) {
         Nivel nivel = nivelRepository.findById(dto.getNivelId())

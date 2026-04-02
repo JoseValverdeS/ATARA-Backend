@@ -3,7 +3,6 @@ package com.atara.deb.ataraapi.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -35,12 +34,6 @@ public class Periodo {
     // SMALLINT — entre 1 y 6; UNIQUE por año (uq_periodo_por_anio)
     @Column(name = "numero_periodo", nullable = false)
     private Short numeroPeriodo;
-
-    @Column(name = "fecha_inicio", nullable = false)
-    private LocalDate fechaInicio;
-
-    @Column(name = "fecha_fin", nullable = false)
-    private LocalDate fechaFin;
 
     // Solo uno por año puede ser TRUE (índice parcial uq_periodo_activo_por_anio)
     @Column(name = "activo", nullable = false)

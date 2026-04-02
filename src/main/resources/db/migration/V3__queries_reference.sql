@@ -243,7 +243,6 @@ SELECT
     e.nombre || ' ' || e.apellido1         AS nombre_completo,
     p.numero_periodo,
     p.nombre                                AS periodo,
-    p.fecha_inicio,
     al.anio                                 AS anio_lectivo,
     d.nombre                                AS dimension,
     d.peso                                  AS dimension_peso,
@@ -258,7 +257,7 @@ JOIN escalas_valoracion     esc ON esc.id            = de.escala_id
 JOIN estudiantes            e   ON e.id              = ev.estudiante_id
 WHERE e.estado = 'ACTIVO'
 GROUP BY ev.estudiante_id, e.nombre, e.apellido1,
-         p.numero_periodo, p.nombre, p.fecha_inicio,
+         p.numero_periodo, p.nombre,
          al.anio, d.id, d.nombre, d.peso
 ORDER BY ev.estudiante_id, al.anio, p.numero_periodo, d.nombre;
 

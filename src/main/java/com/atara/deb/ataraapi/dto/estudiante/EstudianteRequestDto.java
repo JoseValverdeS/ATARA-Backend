@@ -1,8 +1,8 @@
 package com.atara.deb.ataraapi.dto.estudiante;
 
+import com.atara.deb.ataraapi.model.enums.EstadoEstudiante;
 import com.atara.deb.ataraapi.model.enums.Genero;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
@@ -28,6 +28,9 @@ public class EstudianteRequestDto {
     private String telefonoAcudiente;
 
     private String correoAcudiente;
+
+    /** Opcional en creación (default ACTIVO). En actualización: ACTIVO, INACTIVO o TRASLADADO. */
+    private EstadoEstudiante estado;
 
     public String getIdentificacion() { return identificacion; }
     public void setIdentificacion(String identificacion) { this.identificacion = identificacion; }
@@ -55,4 +58,7 @@ public class EstudianteRequestDto {
 
     public String getCorreoAcudiente() { return correoAcudiente; }
     public void setCorreoAcudiente(String correoAcudiente) { this.correoAcudiente = correoAcudiente; }
+
+    public EstadoEstudiante getEstado() { return estado; }
+    public void setEstado(EstadoEstudiante estado) { this.estado = estado; }
 }

@@ -74,6 +74,7 @@ public class EstudianteController {
         e.setNombreAcudiente(dto.getNombreAcudiente());
         e.setTelefonoAcudiente(dto.getTelefonoAcudiente());
         e.setCorreoAcudiente(dto.getCorreoAcudiente());
+        e.setEstado(dto.getEstado()); // null → service preserva el estado actual
         return e;
     }
 

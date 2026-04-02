@@ -1,5 +1,6 @@
 package com.atara.deb.ataraapi.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -23,28 +24,28 @@ public class GlobalExceptionHandler {
     // -------------------------------------------------------------------------
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Map<String, Object>> handleBadCredentials(BadCredentialsException ex) {
-        return buildResponse(HttpStatus.UNAUTHORIZED, "Correo o contraseña incorrectos.");
+    public ResponseEntity<Map<String, Object>> handleBadCredentials(BadCredentialsException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Correo o contraseña incorrectos.", req);
     }
 
     @ExceptionHandler(DisabledException.class)
-    public ResponseEntity<Map<String, Object>> handleDisabled(DisabledException ex) {
-        return buildResponse(HttpStatus.FORBIDDEN, "La cuenta de usuario está inactiva.");
+    public ResponseEntity<Map<String, Object>> handleDisabled(DisabledException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.FORBIDDEN, "La cuenta de usuario está inactiva.", req);
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<Map<String, Object>> handleAuthentication(AuthenticationException ex) {
-        return buildResponse(HttpStatus.UNAUTHORIZED, "No autenticado: " + ex.getMessage());
+    public ResponseEntity<Map<String, Object>> handleAuthentication(AuthenticationException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, "No autenticado: " + ex.getMessage(), req);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
-        return buildResponse(HttpStatus.FORBIDDEN, "No tiene permisos para acceder a este recurso.");
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.FORBIDDEN, "No tiene permisos para acceder a este recurso.", req);
     }
 
     @ExceptionHandler(TokenRefreshException.class)
-    public ResponseEntity<Map<String, Object>> handleTokenRefresh(TokenRefreshException ex) {
-        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    public ResponseEntity<Map<String, Object>> handleTokenRefresh(TokenRefreshException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), req);
     }
 
     // -------------------------------------------------------------------------
@@ -52,11 +53,11 @@ public class GlobalExceptionHandler {
     // -------------------------------------------------------------------------
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
         String mensaje = ex.getBindingResult().getFieldErrors().stream()
                 .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
                 .collect(Collectors.joining(", "));
-        return buildResponse(HttpStatus.BAD_REQUEST, mensaje);
+        return buildResponse(HttpStatus.BAD_REQUEST, mensaje, req);
     }
 
     // -------------------------------------------------------------------------
@@ -64,33 +65,34 @@ public class GlobalExceptionHandler {
     // -------------------------------------------------------------------------
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
     }
 
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Map<String, Object>> handleNotFound(NoSuchElementException ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    public ResponseEntity<Map<String, Object>> handleNotFound(NoSuchElementException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), req);
     }
 
     @ExceptionHandler(UnsupportedOperationException.class)
-    public ResponseEntity<Map<String, Object>> handleNotImplemented(UnsupportedOperationException ex) {
-        return buildResponse(HttpStatus.NOT_IMPLEMENTED, ex.getMessage());
+    public ResponseEntity<Map<String, Object>> handleNotImplemented(UnsupportedOperationException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.NOT_IMPLEMENTED, ex.getMessage(), req);
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, Object>> handleRuntime(RuntimeException ex) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor.");
+    public ResponseEntity<Map<String, Object>> handleRuntime(RuntimeException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor.", req);
     }
 
     // -------------------------------------------------------------------------
 
-    private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {
+    private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message, HttpServletRequest req) {
         return ResponseEntity.status(status).body(Map.of(
             "timestamp", OffsetDateTime.now().toString(),
             "status",    status.value(),
             "error",     status.getReasonPhrase(),
-            "message",   message != null ? message : ""
+            "message",   message != null ? message : "",
+            "path",      req.getRequestURI()
         ));
     }
 }
