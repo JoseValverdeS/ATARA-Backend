@@ -1,11 +1,15 @@
 package com.atara.deb.ataraapi.service.impl;
 
+import com.atara.deb.ataraapi.dto.aniolectivo.AnioLectivoRequestDto;
 import com.atara.deb.ataraapi.model.AnioLectivo;
-import com.atara.deb.ataraapi.repository.AnioLectivoRepository;
+import com.atara.deb.ataraapi.model.Periodo;
+import com.atara.deb.ataraapi.repository.*;
 import com.atara.deb.ataraapi.service.AnioLectivoService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -15,9 +19,34 @@ import java.util.Optional;
 public class AnioLectivoServiceImpl implements AnioLectivoService {
 
     private final AnioLectivoRepository anioLectivoRepository;
+    private final PeriodoRepository periodoRepository;
+    private final SeccionRepository seccionRepository;
+    private final MatriculaRepository matriculaRepository;
+    private final EvaluacionRepository evaluacionRepository;
+    private final EvaluacionSaberRepository evaluacionSaberRepository;
+    private final AlertaRepository alertaRepository;
+    private final AlertaTematicaRepository alertaTematicaRepository;
 
-    public AnioLectivoServiceImpl(AnioLectivoRepository anioLectivoRepository) {
+    private static final String[] NOMBRES_TRIMESTRE = {
+        "I Trimestre", "II Trimestre", "III Trimestre"
+    };
+
+    public AnioLectivoServiceImpl(AnioLectivoRepository anioLectivoRepository,
+                                   PeriodoRepository periodoRepository,
+                                   SeccionRepository seccionRepository,
+                                   MatriculaRepository matriculaRepository,
+                                   EvaluacionRepository evaluacionRepository,
+                                   EvaluacionSaberRepository evaluacionSaberRepository,
+                                   AlertaRepository alertaRepository,
+                                   AlertaTematicaRepository alertaTematicaRepository) {
         this.anioLectivoRepository = anioLectivoRepository;
+        this.periodoRepository = periodoRepository;
+        this.seccionRepository = seccionRepository;
+        this.matriculaRepository = matriculaRepository;
+        this.evaluacionRepository = evaluacionRepository;
+        this.evaluacionSaberRepository = evaluacionSaberRepository;
+        this.alertaRepository = alertaRepository;
+        this.alertaTematicaRepository = alertaTematicaRepository;
     }
 
     @Override
@@ -30,11 +59,37 @@ public class AnioLectivoServiceImpl implements AnioLectivoService {
         if (anioLectivo.getFechaInicio().isAfter(anioLectivo.getFechaFin())) {
             throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin.");
         }
-        // Nuevo año se crea inactivo por defecto; se activa explícitamente
         if (anioLectivo.getActivo() == null) {
             anioLectivo.setActivo(false);
         }
-        return anioLectivoRepository.save(anioLectivo);
+
+        AnioLectivo guardado = anioLectivoRepository.save(anioLectivo);
+
+        // Generar automáticamente los 3 trimestres dividiendo el rango en partes iguales
+        crearTrimestres(guardado);
+
+        return guardado;
+    }
+
+    private void crearTrimestres(AnioLectivo anio) {
+        LocalDate inicio = anio.getFechaInicio();
+        LocalDate fin    = anio.getFechaFin();
+        long totalDias   = ChronoUnit.DAYS.between(inicio, fin);
+        long tercio      = totalDias / 3;
+
+        for (int i = 0; i < 3; i++) {
+            LocalDate fechaIni = inicio.plusDays(i * tercio);
+            LocalDate fechaFin = (i == 2) ? fin : inicio.plusDays((i + 1) * tercio).minusDays(1);
+
+            periodoRepository.save(Periodo.builder()
+                    .anioLectivo(anio)
+                    .nombre(NOMBRES_TRIMESTRE[i])
+                    .numeroPeriodo((short) (i + 1))
+                    .fechaInicio(fechaIni)
+                    .fechaFin(fechaFin)
+                    .activo(i == 0)   // el primer trimestre queda activo
+                    .build());
+        }
     }
 
     @Override
@@ -57,11 +112,48 @@ public class AnioLectivoServiceImpl implements AnioLectivoService {
     }
 
     @Override
+    public AnioLectivo actualizar(Long id, AnioLectivoRequestDto dto) {
+        AnioLectivo anio = buscarPorId(id);
+        if (dto.getFechaInicio().isAfter(dto.getFechaFin())) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin.");
+        }
+        anio.setAnio(dto.getAnio());
+        anio.setFechaInicio(dto.getFechaInicio());
+        anio.setFechaFin(dto.getFechaFin());
+        return anioLectivoRepository.save(anio);
+    }
+
+    @Override
     public AnioLectivo activar(Long id) {
         AnioLectivo anioLectivo = buscarPorId(id);
-        // Desactiva el año activo actual antes de activar el nuevo
         anioLectivoRepository.desactivarTodos();
         anioLectivo.setActivo(true);
         return anioLectivoRepository.save(anioLectivo);
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        AnioLectivo anio = buscarPorId(id);
+        if (Boolean.TRUE.equals(anio.getActivo())) {
+            throw new IllegalArgumentException(
+                "No se puede eliminar el año lectivo activo. " +
+                "Activa otro año lectivo antes de eliminar éste.");
+        }
+
+        // Eliminar datos de cada periodo (alertas → evaluaciones → periodos)
+        List<Periodo> periodos = periodoRepository.findByAnioLectivoId(id);
+        for (Periodo p : periodos) {
+            alertaTematicaRepository.deleteAllByPeriodoId(p.getId());
+            alertaRepository.deleteAllByPeriodoId(p.getId());
+            evaluacionSaberRepository.deleteAllByPeriodoId(p.getId()); // cascada a detalles
+            evaluacionRepository.deleteAllByPeriodoId(p.getId());      // cascada a detalles
+        }
+        periodoRepository.deleteAll(periodos);
+
+        // Eliminar matrículas y secciones del año
+        matriculaRepository.deleteAllByAnioLectivoId(id);
+        seccionRepository.deleteAll(seccionRepository.findByAnioLectivoId(id));
+
+        anioLectivoRepository.deleteById(id);
     }
 }

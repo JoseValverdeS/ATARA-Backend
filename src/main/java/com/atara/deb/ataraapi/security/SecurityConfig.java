@@ -77,8 +77,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         // Permite distinguir "usuario no encontrado" de "contraseña incorrecta internamente,
         // pero ambos se mapean a 401 en el GlobalExceptionHandler para no filtrar información.

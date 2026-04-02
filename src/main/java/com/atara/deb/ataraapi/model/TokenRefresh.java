@@ -2,6 +2,7 @@ package com.atara.deb.ataraapi.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnTransformer;
 
 import java.time.OffsetDateTime;
 
@@ -39,6 +40,7 @@ public class TokenRefresh {
 
     // Tipo PostgreSQL INET — se mapea como String vía JDBC
     @Column(name = "ip_origen", columnDefinition = "inet")
+    @ColumnTransformer(write = "CAST(? AS inet)")
     private String ipOrigen;
 
     @Column(name = "user_agent", length = 255)

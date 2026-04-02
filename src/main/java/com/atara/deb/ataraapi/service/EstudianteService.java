@@ -19,4 +19,6 @@ public interface EstudianteService {
     List<Estudiante> listarPorEstado(EstadoEstudiante estado);
 
     Estudiante actualizar(Long id, Estudiante datosActualizados);
+
+    void eliminar(Long id);
 }

@@ -3,6 +3,7 @@ package com.atara.deb.ataraapi.repository;
 import com.atara.deb.ataraapi.model.Matricula;
 import com.atara.deb.ataraapi.model.enums.EstadoMatricula;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -23,4 +24,16 @@ public interface MatriculaRepository extends JpaRepository<Matricula, Long> {
     boolean existsByEstudianteIdAndAnioLectivoId(Long estudianteId, Long anioLectivoId);
 
     List<Matricula> findByEstudianteIdAndEstado(Long estudianteId, EstadoMatricula estado);
+
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE FROM Matricula m WHERE m.estudiante.id = :estudianteId")
+    void deleteAllByEstudianteId(@Param("estudianteId") Long estudianteId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE FROM Matricula m WHERE m.seccion.id = :seccionId")
+    void deleteAllBySeccionId(@Param("seccionId") Long seccionId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE FROM Matricula m WHERE m.anioLectivo.id = :anioLectivoId")
+    void deleteAllByAnioLectivoId(@Param("anioLectivoId") Long anioLectivoId);
 }

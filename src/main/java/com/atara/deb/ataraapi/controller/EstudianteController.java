@@ -55,6 +55,12 @@ public class EstudianteController {
         return ResponseEntity.ok(toResponse(actualizado));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        estudianteService.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
+
     // --- Mapeo ---
 
     private Estudiante toEntity(EstudianteRequestDto dto) {

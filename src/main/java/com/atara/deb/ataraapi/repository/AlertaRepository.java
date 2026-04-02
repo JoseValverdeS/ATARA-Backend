@@ -3,6 +3,7 @@ package com.atara.deb.ataraapi.repository;
 import com.atara.deb.ataraapi.model.Alerta;
 import com.atara.deb.ataraapi.model.enums.EstadoAlerta;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -24,6 +25,14 @@ public interface AlertaRepository extends JpaRepository<Alerta, Long> {
     List<Alerta> findByPeriodoId(Long periodoId);
 
     List<Alerta> findByEstudianteIdAndEstado(Long estudianteId, EstadoAlerta estado);
+
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE FROM Alerta a WHERE a.estudiante.id = :estudianteId")
+    void deleteAllByEstudianteId(@Param("estudianteId") Long estudianteId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE FROM Alerta a WHERE a.periodo.id = :periodoId")
+    void deleteAllByPeriodoId(@Param("periodoId") Long periodoId);
 
     @Query("""
         SELECT a FROM Alerta a

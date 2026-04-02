@@ -50,10 +50,24 @@ public class AnioLectivoController {
         return ResponseEntity.ok(toResponse(anioLectivoService.buscarPorId(id)));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<AnioLectivoResponseDto> actualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody AnioLectivoRequestDto request) {
+        AnioLectivo actualizado = anioLectivoService.actualizar(id, request);
+        return ResponseEntity.ok(toResponse(actualizado));
+    }
+
     @PutMapping("/{id}/activar")
     public ResponseEntity<AnioLectivoResponseDto> activar(@PathVariable Long id) {
         AnioLectivo activado = anioLectivoService.activar(id);
         return ResponseEntity.ok(toResponse(activado));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        anioLectivoService.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 
     // --- Mapeo ---

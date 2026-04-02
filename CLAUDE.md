@@ -41,7 +41,7 @@ com.atara.deb.ataraapi/
 ├── controller/       REST endpoints (/api/*)
 ├── service/          Interfaces + impl/ subdirectory for implementations
 ├── repository/       Spring Data JPA repos (all extend JpaRepository<Entity, Long>)
-├── model/            21 JPA entities + enums/ subdirectory (8 enums)
+├── model/            28 JPA entities + enums/ subdirectory (9 enums)
 ├── dto/              Request/Response DTOs organized by domain (alerta/, estudiante/, etc.)
 └── exception/        GlobalExceptionHandler (centralized HTTP error mapping)
 ```
@@ -50,14 +50,19 @@ com.atara.deb.ataraapi/
 - `V1__init_schema.sql` — 20 tables, 40+ indices, 13 audit triggers
 - `V2__sample_data.sql` — seed data (BCrypt password hashes need to be regenerated for auth testing)
 - `V3__queries_reference.sql` — 8 reporting views (`vw_criterios_completos`, `vw_rendimiento_periodo_activo`, etc.)
+- `V4__evaluacion_saberes_alertas_tematicas.sql` — 6 tables (tipos_saber, ejes_tematicos, niveles_desempeno, evaluaciones_saber, detalle_evaluacion_saber, alertas_tematicas) + 2 views + seed data
 
 **Audit trail** is handled entirely at the database level via the `registro_auditoria` table (JSONB) and `fn_actualizar_updated_at` triggers — no application-level audit code needed.
 
 ## Key Domain Concepts
 
-- **Escala de valoración**: 4-point scale — Insuficiente (1), Básico (2), Satisfactorio (3), Destacado (4)
+- **Escala de valoración (original)**: 4-point scale — Insuficiente (1), Básico (2), Satisfactorio (3), Destacado (4)
+- **Escala de desempeño por saberes**: 5-point scale — Inicial (1), En desarrollo (2), Intermedio (3), Logrado (4), Avanzado (5)
 - **Dimensiones de evaluación**: 5 dimensions including Rendimiento Académico, Participación, Hábitos de Estudio, Factores Socioemocionales
+- **Tipos de saber**: Conceptual, Procedimental, Actitudinal — each with 7 ejes temáticos (21 total)
 - **Structure hierarchy**: Centro Educativo → Sección → Periodo → Evaluacion → DetalleEvaluacion
+- **Evaluaciones por saber**: EvaluacionSaber → DetalleEvaluacionSaber (multiple per student/period/tipo_saber)
+- **Alertas temáticas**: Generated from averages per eje temático — ALTA (≤2.0), MEDIA (2.1-3.0), SIN_ALERTA (>3.0)
 - **Unique constraint on evaluaciones**: `(estudiante_id, usuario_id, periodo_id)` — enforced at DB level
 
 ## Current Endpoint Map
@@ -81,11 +86,41 @@ com.atara.deb.ataraapi/
 | | GET | `/api/anios-lectivos` |
 | | GET | `/api/anios-lectivos/activo` |
 | | GET | `/api/anios-lectivos/{id}` |
+| | PUT | `/api/anios-lectivos/{id}` |
 | | PUT | `/api/anios-lectivos/{id}/activar` |
+| | DELETE | `/api/anios-lectivos/{id}` |
 | AlertaController | GET | `/api/alertas/estudiante/{studentId}?periodoId=` |
 | | GET | `/api/alertas/seccion/{sectionId}?periodoId=` |
 | ReporteController | GET | `/api/reportes/estudiante/{studentId}?materiaId=&periodoId=` |
 | VisualizacionController | GET | `/api/visualizaciones/seccion/{sectionId}/distribucion?materiaId=&periodoId=` |
+| CatalogoSaberController | GET | `/api/catalogos/saberes/tipos` |
+| | GET | `/api/catalogos/saberes/ejes?tipoSaberId=` |
+| | GET | `/api/catalogos/saberes/niveles-desempeno` |
+| EvaluacionSaberController | POST | `/api/evaluaciones-saber` |
+| | PUT | `/api/evaluaciones-saber/{id}` |
+| | GET | `/api/evaluaciones-saber/{id}` |
+| | GET | `/api/evaluaciones-saber/estudiante/{estudianteId}/periodo/{periodoId}` |
+| | GET | `/api/evaluaciones-saber/seccion/{seccionId}/periodo/{periodoId}` |
+| | GET | `/api/evaluaciones-saber/promedios/estudiante/{estudianteId}/periodo/{periodoId}` |
+| | GET | `/api/evaluaciones-saber/promedios/seccion/{seccionId}/periodo/{periodoId}` |
+| AlertaTematicaController | POST | `/api/alertas-tematicas/generar/estudiante/{estudianteId}/periodo/{periodoId}` |
+| | POST | `/api/alertas-tematicas/generar/seccion/{seccionId}/periodo/{periodoId}` |
+| | GET | `/api/alertas-tematicas/estudiante/{estudianteId}/periodo/{periodoId}` |
+| | GET | `/api/alertas-tematicas/seccion/{seccionId}/periodo/{periodoId}` |
+| SeccionController | GET | `/api/secciones?anioLectivoId=` |
+| | GET | `/api/secciones/docente/{docenteId}` |
+| | POST | `/api/secciones` |
+| | PUT | `/api/secciones/{id}` |
+| | DELETE | `/api/secciones/{id}` |
+| | GET | `/api/secciones/catalogos/niveles` |
+| | GET | `/api/secciones/catalogos/centros` |
+| | GET | `/api/secciones/catalogos/docentes` |
+| PeriodoController | POST | `/api/periodos` |
+| | GET | `/api/periodos?anioLectivoId=` |
+| | GET | `/api/periodos/activo?anioLectivoId=` |
+| | PUT | `/api/periodos/{id}` |
+| | PUT | `/api/periodos/{id}/activar` |
+| | DELETE | `/api/periodos/{id}` |
 
 ## Configuration Notes
 
@@ -94,13 +129,20 @@ com.atara.deb.ataraapi/
 - All JPA relationships use `FetchType.LAZY` — be mindful of N+1 query risks when adding new queries
 - BCrypt password hashes in `V2__sample_data.sql` are placeholders; regenerate with `new BCryptPasswordEncoder(12).encode("...")` to test auth flows
 
-## Implementation Status (as of 2026-03-31)
+## Implementation Status (as of 2026-04-01)
 
 These features are planned by the design rules below but **not yet implemented**:
 
 - **Custom exceptions** (`RecursoNoEncontradoException`, `ReglaDeNegocioException`) do not exist. `GlobalExceptionHandler` currently maps `IllegalArgumentException → 400`, `NoSuchElementException → 404`, `UnsupportedOperationException → 501`, `RuntimeException → 500`. When adding new features, create the proper custom exception class and add a handler mapping to `GlobalExceptionHandler`.
-- **`MethodArgumentNotValidException` is not handled** in `GlobalExceptionHandler` — validation errors from `@Valid` currently surface as 500. This handler needs to be added.
-- **Spring Security / JWT is not implemented**. The `TokenRefresh` entity and `Usuario`/`Rol` models exist but no `SecurityFilterChain`, JWT filter, or `@EnableWebSecurity` configuration has been written. All endpoints are currently public.
+- **`ApiResponse<T>` wrapper** is not implemented. Controllers return DTOs directly instead of wrapping in `ApiResponse`. Needs to be created and applied across all controllers.
+- ~~**Spring Security / JWT is not implemented**~~. **Implemented** (as of 2026-03-31): `SecurityConfig`, `JwtService`, `JwtAuthenticationFilter`, `UserDetailsServiceImpl`, `AuthController` with login/refresh/logout/me. All endpoints require JWT except `/api/auth/*` and `/actuator/health`.
+
+## Features added (as of 2026-04-01)
+
+- **Auto-creación de periodos**: Al crear un año lectivo, `AnioLectivoServiceImpl` genera automáticamente 3 trimestres (I, II, III) dividiendo el rango de fechas en partes iguales. El I Trimestre queda activo por defecto.
+- **Activar periodo**: `PUT /api/periodos/{id}/activar` desactiva todos los periodos del mismo año y activa el seleccionado.
+- **Crear sección**: `POST /api/secciones` con `SeccionRequestDto`. Catálogos de soporte: `GET /api/secciones/catalogos/niveles`, `/centros`, `/docentes`. Requiere `NivelRepository` y `CentroEducativoRepository`.
+- **Recalificación de evaluaciones por saber**: `PUT /api/evaluaciones-saber/{id}` reemplaza los detalles (scores) de una evaluación existente limpiando con `orphanRemoval` y re-insertando. El wizard del frontend muestra primero una pantalla de selección de saberes con alertas pre-marcadas, luego pre-rellena los valores anteriores.
 
 ---
 
