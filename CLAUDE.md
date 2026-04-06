@@ -94,7 +94,8 @@ com.atara.deb.ataraapi/
 | ReporteController | GET | `/api/reportes/estudiante/{studentId}?materiaId=&periodoId=` |
 | VisualizacionController | GET | `/api/visualizaciones/seccion/{sectionId}/distribucion?materiaId=&periodoId=` |
 | CatalogoSaberController | GET | `/api/catalogos/saberes/tipos` |
-| | GET | `/api/catalogos/saberes/ejes?tipoSaberId=` |
+| | GET | `/api/catalogos/saberes/materias` |
+| | GET | `/api/catalogos/saberes/ejes?materiaId=&tipoSaberId=` |
 | | GET | `/api/catalogos/saberes/niveles-desempeno` |
 | EvaluacionSaberController | POST | `/api/evaluaciones-saber` |
 | | PUT | `/api/evaluaciones-saber/{id}` |

@@ -1,9 +1,12 @@
 package com.atara.deb.ataraapi.service.impl;
 
 import com.atara.deb.ataraapi.dto.saber.EjeTemaaticoResponseDto;
+import com.atara.deb.ataraapi.dto.saber.MateriaResponseDto;
 import com.atara.deb.ataraapi.dto.saber.NivelDesempenoResponseDto;
 import com.atara.deb.ataraapi.dto.saber.TipoSaberResponseDto;
+import com.atara.deb.ataraapi.model.EjeTematico;
 import com.atara.deb.ataraapi.repository.EjeTemaaticoRepository;
+import com.atara.deb.ataraapi.repository.MateriaRepository;
 import com.atara.deb.ataraapi.repository.NivelDesempenoRepository;
 import com.atara.deb.ataraapi.repository.TipoSaberRepository;
 import com.atara.deb.ataraapi.service.CatalogoSaberService;
@@ -19,13 +22,16 @@ public class CatalogoSaberServiceImpl implements CatalogoSaberService {
     private final TipoSaberRepository tipoSaberRepository;
     private final EjeTemaaticoRepository ejeTemaaticoRepository;
     private final NivelDesempenoRepository nivelDesempenoRepository;
+    private final MateriaRepository materiaRepository;
 
     public CatalogoSaberServiceImpl(TipoSaberRepository tipoSaberRepository,
                                      EjeTemaaticoRepository ejeTemaaticoRepository,
-                                     NivelDesempenoRepository nivelDesempenoRepository) {
+                                     NivelDesempenoRepository nivelDesempenoRepository,
+                                     MateriaRepository materiaRepository) {
         this.tipoSaberRepository = tipoSaberRepository;
         this.ejeTemaaticoRepository = ejeTemaaticoRepository;
         this.nivelDesempenoRepository = nivelDesempenoRepository;
+        this.materiaRepository = materiaRepository;
     }
 
     @Override
@@ -41,32 +47,34 @@ public class CatalogoSaberServiceImpl implements CatalogoSaberService {
     }
 
     @Override
+    public List<MateriaResponseDto> listarMaterias() {
+        return materiaRepository.findAll().stream()
+            .map(m -> MateriaResponseDto.builder()
+                .id(m.getId())
+                .clave(m.getClave())
+                .nombre(m.getNombre())
+                .build())
+            .toList();
+    }
+
+    @Override
     public List<EjeTemaaticoResponseDto> listarEjesTematicos() {
         return ejeTemaaticoRepository.findAllByOrderByTipoSaberIdAscOrdenAsc().stream()
-            .map(ej -> EjeTemaaticoResponseDto.builder()
-                .id(ej.getId())
-                .clave(ej.getClave())
-                .nombre(ej.getNombre())
-                .descripcion(ej.getDescripcion())
-                .orden(ej.getOrden())
-                .tipoSaberId(ej.getTipoSaber().getId())
-                .tipoSaberNombre(ej.getTipoSaber().getNombre())
-                .build())
+            .map(this::toEjeDto)
             .toList();
     }
 
     @Override
     public List<EjeTemaaticoResponseDto> listarEjesPorTipoSaber(Integer tipoSaberId) {
         return ejeTemaaticoRepository.findByTipoSaberIdOrderByOrden(tipoSaberId).stream()
-            .map(ej -> EjeTemaaticoResponseDto.builder()
-                .id(ej.getId())
-                .clave(ej.getClave())
-                .nombre(ej.getNombre())
-                .descripcion(ej.getDescripcion())
-                .orden(ej.getOrden())
-                .tipoSaberId(ej.getTipoSaber().getId())
-                .tipoSaberNombre(ej.getTipoSaber().getNombre())
-                .build())
+            .map(this::toEjeDto)
+            .toList();
+    }
+
+    @Override
+    public List<EjeTemaaticoResponseDto> listarEjesPorMateriaYTipoSaber(Integer materiaId, Integer tipoSaberId) {
+        return ejeTemaaticoRepository.findByMateriaIdAndTipoSaberIdOrderByOrden(materiaId, tipoSaberId).stream()
+            .map(this::toEjeDto)
             .toList();
     }
 
@@ -81,5 +89,19 @@ public class CatalogoSaberServiceImpl implements CatalogoSaberService {
                 .descripcion(nd.getDescripcion())
                 .build())
             .toList();
+    }
+
+    private EjeTemaaticoResponseDto toEjeDto(EjeTematico ej) {
+        return EjeTemaaticoResponseDto.builder()
+            .id(ej.getId())
+            .clave(ej.getClave())
+            .nombre(ej.getNombre())
+            .descripcion(ej.getDescripcion())
+            .orden(ej.getOrden())
+            .tipoSaberId(ej.getTipoSaber().getId())
+            .tipoSaberNombre(ej.getTipoSaber().getNombre())
+            .materiaId(ej.getMateria().getId())
+            .materiaNombre(ej.getMateria().getNombre())
+            .build();
     }
 }

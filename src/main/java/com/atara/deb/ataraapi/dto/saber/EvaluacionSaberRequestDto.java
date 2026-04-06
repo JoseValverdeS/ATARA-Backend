@@ -25,6 +25,9 @@ public class EvaluacionSaberRequestDto {
     @NotNull(message = "El ID de la sección es obligatorio")
     private Long seccionId;
 
+    @NotNull(message = "El ID de la materia es obligatorio")
+    private Integer materiaId;
+
     @NotNull(message = "El ID del tipo de saber es obligatorio")
     private Integer tipoSaberId;
 

@@ -12,19 +12,29 @@ public interface DetalleEvaluacionSaberRepository extends JpaRepository<DetalleE
 
     @Query("""
         SELECT d FROM DetalleEvaluacionSaber d
-        JOIN d.evaluacionSaber es
+        JOIN FETCH d.evaluacionSaber es
+        JOIN FETCH es.materia
+        JOIN FETCH d.ejeTematico eje
+        JOIN FETCH eje.materia
+        JOIN FETCH eje.tipoSaber
         WHERE es.estudiante.id = :estudianteId
           AND es.periodo.id = :periodoId
-        ORDER BY d.ejeTematico.id
+          AND es.materia.id = eje.materia.id
+        ORDER BY es.materia.id, eje.tipoSaber.id, eje.orden
     """)
     List<DetalleEvaluacionSaber> findByEstudianteAndPeriodo(Long estudianteId, Long periodoId);
 
     @Query("""
         SELECT d FROM DetalleEvaluacionSaber d
-        JOIN d.evaluacionSaber es
+        JOIN FETCH d.evaluacionSaber es
+        JOIN FETCH es.materia
+        JOIN FETCH d.ejeTematico eje
+        JOIN FETCH eje.materia
+        JOIN FETCH eje.tipoSaber
         WHERE es.estudiante.id = :estudianteId
           AND es.periodo.id = :periodoId
-          AND d.ejeTematico.id = :ejeTematicoId
+          AND eje.id = :ejeTematicoId
+          AND es.materia.id = eje.materia.id
     """)
     List<DetalleEvaluacionSaber> findByEstudiantePeriodoAndEje(
         Long estudianteId, Long periodoId, Integer ejeTematicoId);

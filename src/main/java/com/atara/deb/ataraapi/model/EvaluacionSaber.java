@@ -38,6 +38,10 @@ public class EvaluacionSaber {
     private Seccion seccion;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "materia_id", nullable = false)
+    private Materia materia;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tipo_saber_id", nullable = false)
     private TipoSaber tipoSaber;
 

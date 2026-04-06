@@ -1,6 +1,7 @@
 package com.atara.deb.ataraapi.controller;
 
 import com.atara.deb.ataraapi.dto.saber.EjeTemaaticoResponseDto;
+import com.atara.deb.ataraapi.dto.saber.MateriaResponseDto;
 import com.atara.deb.ataraapi.dto.saber.NivelDesempenoResponseDto;
 import com.atara.deb.ataraapi.dto.saber.TipoSaberResponseDto;
 import com.atara.deb.ataraapi.service.CatalogoSaberService;
@@ -24,9 +25,18 @@ public class CatalogoSaberController {
         return ResponseEntity.ok(catalogoSaberService.listarTiposSaber());
     }
 
+    @GetMapping("/materias")
+    public ResponseEntity<List<MateriaResponseDto>> listarMaterias() {
+        return ResponseEntity.ok(catalogoSaberService.listarMaterias());
+    }
+
     @GetMapping("/ejes")
     public ResponseEntity<List<EjeTemaaticoResponseDto>> listarEjesTematicos(
+            @RequestParam(required = false) Integer materiaId,
             @RequestParam(required = false) Integer tipoSaberId) {
+        if (materiaId != null && tipoSaberId != null) {
+            return ResponseEntity.ok(catalogoSaberService.listarEjesPorMateriaYTipoSaber(materiaId, tipoSaberId));
+        }
         if (tipoSaberId != null) {
             return ResponseEntity.ok(catalogoSaberService.listarEjesPorTipoSaber(tipoSaberId));
         }

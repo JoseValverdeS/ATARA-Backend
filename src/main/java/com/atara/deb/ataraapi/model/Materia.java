@@ -16,17 +16,14 @@ public class Materia {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
+
+    @Column(name = "clave", nullable = false, length = 30, unique = true)
+    private String clave;
 
     @Column(name = "nombre", nullable = false, length = 100, unique = true)
     private String nombre;
 
-    @Column(name = "descripcion")
-    private String descripcion;
-
     @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
-
-    @Column(name = "updated_at", insertable = false, updatable = false)
-    private OffsetDateTime updatedAt;
 }

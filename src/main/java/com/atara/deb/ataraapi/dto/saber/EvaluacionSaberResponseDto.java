@@ -19,6 +19,8 @@ public class EvaluacionSaberResponseDto {
     private Long usuarioId;
     private Long seccionId;
     private String seccionNombre;
+    private Integer materiaId;
+    private String materiaNombre;
     private Integer tipoSaberId;
     private String tipoSaberNombre;
     private LocalDate fechaEvaluacion;

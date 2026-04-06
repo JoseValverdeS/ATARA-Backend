@@ -12,6 +12,8 @@ public class PromedioEjeResponseDto {
     private Integer ejeTemaaticoId;
     private String ejeNombre;
     private String ejeClave;
+    private Integer materiaId;
+    private String materiaNombre;
     private Integer tipoSaberId;
     private String tipoSaberNombre;
     private BigDecimal promedio;

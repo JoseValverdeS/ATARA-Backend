@@ -10,6 +10,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PromedioTipoSaberResponseDto {
+    private Integer materiaId;
+    private String materiaNombre;
     private Integer tipoSaberId;
     private String tipoSaberNombre;
     private BigDecimal promedioGeneral;

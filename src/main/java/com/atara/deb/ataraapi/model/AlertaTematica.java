@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
     name = "alertas_tematicas",
     uniqueConstraints = @UniqueConstraint(
         name = "uq_alerta_tematica",
-        columnNames = {"estudiante_id", "periodo_id", "eje_tematico_id", "nivel_alerta"}
+        columnNames = {"estudiante_id", "periodo_id", "eje_tematico_id", "materia_id", "nivel_alerta"}
     )
 )
 @Getter
@@ -38,6 +38,10 @@ public class AlertaTematica {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "eje_tematico_id", nullable = false)
     private EjeTematico ejeTematico;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "materia_id", nullable = false)
+    private Materia materia;
 
     @Column(name = "promedio", nullable = false, precision = 4, scale = 2)
     private BigDecimal promedio;

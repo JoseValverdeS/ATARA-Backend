@@ -14,4 +14,6 @@ public class EjeTemaaticoResponseDto {
     private Short orden;
     private Integer tipoSaberId;
     private String tipoSaberNombre;
+    private Integer materiaId;
+    private String materiaNombre;
 }

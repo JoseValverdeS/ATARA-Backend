@@ -8,4 +8,6 @@ import java.util.List;
 public interface EjeTemaaticoRepository extends JpaRepository<EjeTematico, Integer> {
     List<EjeTematico> findByTipoSaberIdOrderByOrden(Integer tipoSaberId);
     List<EjeTematico> findAllByOrderByTipoSaberIdAscOrdenAsc();
+    List<EjeTematico> findByMateriaIdAndTipoSaberIdOrderByOrden(Integer materiaId, Integer tipoSaberId);
+    List<EjeTematico> findByMateriaIdOrderByTipoSaberIdAscOrdenAsc(Integer materiaId);
 }

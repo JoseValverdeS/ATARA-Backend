@@ -12,22 +12,38 @@ import java.util.Optional;
 
 public interface AlertaTematicaRepository extends JpaRepository<AlertaTematica, Long> {
 
+    @Query("""
+        SELECT a FROM AlertaTematica a
+        JOIN FETCH a.estudiante
+        JOIN FETCH a.periodo
+        JOIN FETCH a.materia
+        JOIN FETCH a.ejeTematico eje
+        JOIN FETCH eje.tipoSaber
+        WHERE a.estudiante.id = :estudianteId
+          AND a.periodo.id = :periodoId
+        ORDER BY a.materia.id, eje.tipoSaber.id, eje.orden, a.promedio ASC
+    """)
     List<AlertaTematica> findByEstudianteIdAndPeriodoId(Long estudianteId, Long periodoId);
 
     List<AlertaTematica> findByPeriodoId(Long periodoId);
 
     @Query("""
         SELECT a FROM AlertaTematica a
+        JOIN FETCH a.estudiante
+        JOIN FETCH a.periodo
+        JOIN FETCH a.materia
+        JOIN FETCH a.ejeTematico eje
+        JOIN FETCH eje.tipoSaber
         WHERE a.estudiante.id IN :estudianteIds AND a.periodo.id = :periodoId
-        ORDER BY a.nivelAlerta ASC, a.promedio ASC
+        ORDER BY a.materia.id, eje.tipoSaber.id, eje.orden, a.nivelAlerta ASC, a.promedio ASC
     """)
     List<AlertaTematica> findByEstudianteIdInAndPeriodoId(List<Long> estudianteIds, Long periodoId);
 
-    List<AlertaTematica> findByEstudianteIdAndPeriodoIdAndEjeTematico_Id(
-        Long estudianteId, Long periodoId, Integer ejeTemaaticoId);
+    List<AlertaTematica> findByEstudianteIdAndPeriodoIdAndEjeTematico_IdAndMateriaId(
+        Long estudianteId, Long periodoId, Integer ejeTemaaticoId, Integer materiaId);
 
-    Optional<AlertaTematica> findByEstudianteIdAndPeriodoIdAndEjeTematico_IdAndNivelAlerta(
-        Long estudianteId, Long periodoId, Integer ejeTemaaticoId, NivelAlertaTematica nivelAlerta);
+    Optional<AlertaTematica> findByEstudianteIdAndPeriodoIdAndEjeTematico_IdAndMateriaIdAndNivelAlerta(
+        Long estudianteId, Long periodoId, Integer ejeTemaaticoId, Integer materiaId, NivelAlertaTematica nivelAlerta);
 
     void deleteByEstudianteIdAndPeriodoId(Long estudianteId, Long periodoId);
 

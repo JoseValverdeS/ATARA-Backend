@@ -27,6 +27,7 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
     private final TipoSaberRepository tipoSaberRepository;
     private final EjeTemaaticoRepository ejeTemaaticoRepository;
     private final MatriculaRepository matriculaRepository;
+    private final MateriaRepository materiaRepository;
 
     public EvaluacionSaberServiceImpl(
             EvaluacionSaberRepository evaluacionSaberRepository,
@@ -37,7 +38,8 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
             SeccionRepository seccionRepository,
             TipoSaberRepository tipoSaberRepository,
             EjeTemaaticoRepository ejeTemaaticoRepository,
-            MatriculaRepository matriculaRepository) {
+            MatriculaRepository matriculaRepository,
+            MateriaRepository materiaRepository) {
         this.evaluacionSaberRepository = evaluacionSaberRepository;
         this.detalleRepository = detalleRepository;
         this.estudianteRepository = estudianteRepository;
@@ -47,6 +49,7 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
         this.tipoSaberRepository = tipoSaberRepository;
         this.ejeTemaaticoRepository = ejeTemaaticoRepository;
         this.matriculaRepository = matriculaRepository;
+        this.materiaRepository = materiaRepository;
     }
 
     @Override
@@ -62,15 +65,19 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
             .orElseThrow(() -> new NoSuchElementException("Sección no encontrada con ID: " + request.getSeccionId()));
         TipoSaber tipoSaber = tipoSaberRepository.findById(request.getTipoSaberId())
             .orElseThrow(() -> new NoSuchElementException("Tipo de saber no encontrado con ID: " + request.getTipoSaberId()));
+        Materia materia = materiaRepository.findById(request.getMateriaId())
+            .orElseThrow(() -> new NoSuchElementException("Materia no encontrada con ID: " + request.getMateriaId()));
 
-        List<EjeTematico> ejesDelTipo = ejeTemaaticoRepository.findByTipoSaberIdOrderByOrden(tipoSaber.getId());
+        List<EjeTematico> ejesDelTipo = ejeTemaaticoRepository
+            .findByMateriaIdAndTipoSaberIdOrderByOrden(materia.getId(), tipoSaber.getId());
         Set<Integer> ejesValidosIds = ejesDelTipo.stream().map(EjeTematico::getId).collect(Collectors.toSet());
 
         for (DetalleEvaluacionSaberRequestDto det : request.getDetalles()) {
             if (!ejesValidosIds.contains(det.getEjeTemaaticoId())) {
                 throw new IllegalArgumentException(
                     "El eje temático ID " + det.getEjeTemaaticoId()
-                    + " no pertenece al tipo de saber '" + tipoSaber.getNombre() + "'");
+                    + " no pertenece a la materia '" + materia.getNombre()
+                    + "' / tipo de saber '" + tipoSaber.getNombre() + "'");
             }
         }
 
@@ -79,6 +86,7 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
             .periodo(periodo)
             .usuario(usuario)
             .seccion(seccion)
+            .materia(materia)
             .tipoSaber(tipoSaber)
             .fechaEvaluacion(request.getFechaEvaluacion() != null ? request.getFechaEvaluacion() : LocalDate.now())
             .observacion(request.getObservacion())
@@ -107,14 +115,17 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
         EvaluacionSaber eval = evaluacionSaberRepository.findById(id)
             .orElseThrow(() -> new NoSuchElementException("Evaluación por saber no encontrada con ID: " + id));
 
-        List<EjeTematico> ejesDelTipo = ejeTemaaticoRepository.findByTipoSaberIdOrderByOrden(eval.getTipoSaber().getId());
+        List<EjeTematico> ejesDelTipo = ejeTemaaticoRepository
+            .findByMateriaIdAndTipoSaberIdOrderByOrden(
+                eval.getMateria().getId(), eval.getTipoSaber().getId());
         Set<Integer> ejesValidosIds = ejesDelTipo.stream().map(EjeTematico::getId).collect(Collectors.toSet());
 
         for (DetalleEvaluacionSaberRequestDto det : request.getDetalles()) {
             if (!ejesValidosIds.contains(det.getEjeTemaaticoId())) {
                 throw new IllegalArgumentException(
                     "El eje temático ID " + det.getEjeTemaaticoId()
-                    + " no pertenece al tipo de saber '" + eval.getTipoSaber().getNombre() + "'");
+                    + " no pertenece a la materia '" + eval.getMateria().getNombre()
+                    + "' / tipo de saber '" + eval.getTipoSaber().getNombre() + "'");
             }
         }
 
@@ -199,7 +210,7 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
         Map<Integer, List<DetalleEvaluacionSaber>> porEje = detalles.stream()
             .collect(Collectors.groupingBy(d -> d.getEjeTematico().getId()));
 
-        // Calcular promedio por eje
+        // Calcular promedio por eje (incluye materia del eje)
         Map<Integer, PromedioEjeResponseDto> promediosEje = new LinkedHashMap<>();
         for (Map.Entry<Integer, List<DetalleEvaluacionSaber>> entry : porEje.entrySet()) {
             List<DetalleEvaluacionSaber> detsEje = entry.getValue();
@@ -219,6 +230,8 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
                 .ejeTemaaticoId(eje.getId())
                 .ejeNombre(eje.getNombre())
                 .ejeClave(eje.getClave())
+                .materiaId(eje.getMateria().getId())
+                .materiaNombre(eje.getMateria().getNombre())
                 .tipoSaberId(eje.getTipoSaber().getId())
                 .tipoSaberNombre(eje.getTipoSaber().getNombre())
                 .promedio(promedio)
@@ -229,15 +242,18 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
                 .build());
         }
 
-        // Agrupar promedios por tipo de saber
-        Map<Integer, List<PromedioEjeResponseDto>> porTipoSaber = promediosEje.values().stream()
-            .collect(Collectors.groupingBy(PromedioEjeResponseDto::getTipoSaberId, LinkedHashMap::new, Collectors.toList()));
+        // Agrupar promedios por (materiaId, tipoSaberId) para mantener independencia por materia
+        Map<String, List<PromedioEjeResponseDto>> porMateriaYTipo = promediosEje.values().stream()
+            .collect(Collectors.groupingBy(
+                p -> p.getMateriaId() + "_" + p.getTipoSaberId(),
+                LinkedHashMap::new,
+                Collectors.toList()));
 
         List<PromedioTipoSaberResponseDto> promediosTipo = new ArrayList<>();
         BigDecimal sumaGlobal = BigDecimal.ZERO;
         int countGlobal = 0;
 
-        for (Map.Entry<Integer, List<PromedioEjeResponseDto>> entry : porTipoSaber.entrySet()) {
+        for (Map.Entry<String, List<PromedioEjeResponseDto>> entry : porMateriaYTipo.entrySet()) {
             List<PromedioEjeResponseDto> ejes = entry.getValue();
             BigDecimal sumaTipo = ejes.stream()
                 .map(PromedioEjeResponseDto::getPromedio)
@@ -248,7 +264,9 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
             countGlobal += ejes.size();
 
             promediosTipo.add(PromedioTipoSaberResponseDto.builder()
-                .tipoSaberId(entry.getKey())
+                .materiaId(ejes.get(0).getMateriaId())
+                .materiaNombre(ejes.get(0).getMateriaNombre())
+                .tipoSaberId(ejes.get(0).getTipoSaberId())
                 .tipoSaberNombre(ejes.get(0).getTipoSaberNombre())
                 .promedioGeneral(promedioTipo)
                 .ejesEvaluados(ejes.size())
@@ -314,6 +332,8 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
             .usuarioId(eval.getUsuario().getId())
             .seccionId(eval.getSeccion().getId())
             .seccionNombre(eval.getSeccion().getNombre())
+            .materiaId(eval.getMateria().getId())
+            .materiaNombre(eval.getMateria().getNombre())
             .tipoSaberId(eval.getTipoSaber().getId())
             .tipoSaberNombre(eval.getTipoSaber().getNombre())
             .fechaEvaluacion(eval.getFechaEvaluacion())
