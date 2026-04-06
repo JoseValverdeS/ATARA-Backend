@@ -23,6 +23,9 @@ public interface MatriculaRepository extends JpaRepository<Matricula, Long> {
 
     boolean existsByEstudianteIdAndAnioLectivoId(Long estudianteId, Long anioLectivoId);
 
+    /** True si el estudiante tiene matrícula en alguna de las secciones indicadas. */
+    boolean existsByEstudianteIdAndSeccionIdIn(Long estudianteId, java.util.Collection<Long> seccionIds);
+
     List<Matricula> findByEstudianteIdAndEstado(Long estudianteId, EstadoMatricula estado);
 
     @Modifying(clearAutomatically = true)

@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import com.atara.deb.ataraapi.exception.AccesoDenegadoException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.AuthenticationException;
@@ -41,6 +42,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex, HttpServletRequest req) {
         return buildResponse(HttpStatus.FORBIDDEN, "No tiene permisos para acceder a este recurso.", req);
+    }
+
+    @ExceptionHandler(AccesoDenegadoException.class)
+    public ResponseEntity<Map<String, Object>> handleAccesoDenegado(AccesoDenegadoException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), req);
     }
 
     @ExceptionHandler(TokenRefreshException.class)

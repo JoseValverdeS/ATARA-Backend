@@ -3,6 +3,8 @@ package com.atara.deb.ataraapi.service.impl;
 import com.atara.deb.ataraapi.model.Estudiante;
 import com.atara.deb.ataraapi.model.enums.EstadoEstudiante;
 import com.atara.deb.ataraapi.repository.*;
+import com.atara.deb.ataraapi.security.ContextoUsuario;
+import com.atara.deb.ataraapi.security.ContextoUsuarioService;
 import com.atara.deb.ataraapi.service.EstudianteService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,19 +23,22 @@ public class EstudianteServiceImpl implements EstudianteService {
     private final EvaluacionSaberRepository evaluacionSaberRepository;
     private final AlertaRepository alertaRepository;
     private final AlertaTematicaRepository alertaTematicaRepository;
+    private final ContextoUsuarioService contextoUsuarioService;
 
     public EstudianteServiceImpl(EstudianteRepository estudianteRepository,
                                  MatriculaRepository matriculaRepository,
                                  EvaluacionRepository evaluacionRepository,
                                  EvaluacionSaberRepository evaluacionSaberRepository,
                                  AlertaRepository alertaRepository,
-                                 AlertaTematicaRepository alertaTematicaRepository) {
+                                 AlertaTematicaRepository alertaTematicaRepository,
+                                 ContextoUsuarioService contextoUsuarioService) {
         this.estudianteRepository = estudianteRepository;
         this.matriculaRepository = matriculaRepository;
         this.evaluacionRepository = evaluacionRepository;
         this.evaluacionSaberRepository = evaluacionSaberRepository;
         this.alertaRepository = alertaRepository;
         this.alertaTematicaRepository = alertaTematicaRepository;
+        this.contextoUsuarioService = contextoUsuarioService;
     }
 
     @Override
@@ -52,8 +57,13 @@ public class EstudianteServiceImpl implements EstudianteService {
     @Override
     @Transactional(readOnly = true)
     public Estudiante buscarPorId(Long id) {
-        return estudianteRepository.findById(id)
+        Estudiante estudiante = estudianteRepository.findById(id)
             .orElseThrow(() -> new NoSuchElementException("Estudiante no encontrado con id: " + id));
+
+        ContextoUsuario contexto = contextoUsuarioService.obtenerContextoActual();
+        contextoUsuarioService.verificarAccesoAlEstudiante(id, contexto);
+
+        return estudiante;
     }
 
     @Override
@@ -65,20 +75,33 @@ public class EstudianteServiceImpl implements EstudianteService {
     @Override
     @Transactional(readOnly = true)
     public List<Estudiante> listarTodos() {
-        return estudianteRepository.findAll();
+        ContextoUsuario contexto = contextoUsuarioService.obtenerContextoActual();
+        if (contexto.esAdmin()) {
+            return estudianteRepository.findAll();
+        }
+        if (contexto.seccionIds().isEmpty()) {
+            return List.of();
+        }
+        return estudianteRepository.findBySeccionIds(contexto.seccionIds());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Estudiante> listarPorEstado(EstadoEstudiante estado) {
-        return estudianteRepository.findByEstado(estado);
+        ContextoUsuario contexto = contextoUsuarioService.obtenerContextoActual();
+        if (contexto.esAdmin()) {
+            return estudianteRepository.findByEstado(estado);
+        }
+        // Para docentes: filtrar por sus secciones y luego por estado
+        return estudianteRepository.findBySeccionIds(contexto.seccionIds()).stream()
+            .filter(e -> e.getEstado() == estado)
+            .toList();
     }
 
     @Override
     public Estudiante actualizar(Long id, Estudiante datosActualizados) {
-        Estudiante existente = buscarPorId(id);
+        Estudiante existente = buscarPorId(id); // ya valida acceso
 
-        // Verificar unicidad de identificación si cambió
         if (!existente.getIdentificacion().equals(datosActualizados.getIdentificacion())
                 && estudianteRepository.existsByIdentificacion(datosActualizados.getIdentificacion())) {
             throw new IllegalArgumentException(
@@ -95,7 +118,6 @@ public class EstudianteServiceImpl implements EstudianteService {
         existente.setNombreAcudiente(datosActualizados.getNombreAcudiente());
         existente.setTelefonoAcudiente(datosActualizados.getTelefonoAcudiente());
         existente.setCorreoAcudiente(datosActualizados.getCorreoAcudiente());
-        // Actualizar estado solo si viene en el request; de lo contrario conservar el actual
         if (datosActualizados.getEstado() != null) {
             existente.setEstado(datosActualizados.getEstado());
         }
@@ -105,14 +127,13 @@ public class EstudianteServiceImpl implements EstudianteService {
 
     @Override
     public void eliminar(Long id) {
-        buscarPorId(id); // lanza NoSuchElementException si no existe
+        buscarPorId(id); // lanza NoSuchElementException si no existe; valida acceso
         // Eliminar en orden correcto respetando FK RESTRICT del esquema:
         // alertas temáticas → alertas → evaluaciones saber → evaluaciones → matrículas → estudiante
-        // Las tablas detalle_evaluacion y detalle_evaluacion_saber tienen ON DELETE CASCADE.
         alertaTematicaRepository.deleteAllByEstudianteId(id);
         alertaRepository.deleteAllByEstudianteId(id);
-        evaluacionSaberRepository.deleteAllByEstudianteId(id);  // cascada a detalle_evaluacion_saber
-        evaluacionRepository.deleteAllByEstudianteId(id);       // cascada a detalle_evaluacion
+        evaluacionSaberRepository.deleteAllByEstudianteId(id);
+        evaluacionRepository.deleteAllByEstudianteId(id);
         matriculaRepository.deleteAllByEstudianteId(id);
         estudianteRepository.deleteById(id);
     }

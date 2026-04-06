@@ -1,5 +1,12 @@
 package com.atara.deb.ataraapi.dto.auth;
 
+import java.util.Set;
+
+/**
+ * Respuesta del endpoint GET /api/auth/me.
+ * Incluye las asignaciones del usuario para que el frontend
+ * pueda pre-filtrar su vista sin llamadas adicionales.
+ */
 public class MeResponseDto {
 
     private Long userId;
@@ -7,6 +14,10 @@ public class MeResponseDto {
     private String nombre;
     private String apellidos;
     private String rol;
+    /** IDs de las secciones asignadas. Vacío si el usuario es ADMIN o COORDINADOR. */
+    private Set<Long> seccionIds;
+    /** IDs de las materias asignadas. Vacío si el usuario es ADMIN o COORDINADOR. */
+    private Set<Integer> materiaIds;
 
     public MeResponseDto() {}
 
@@ -24,4 +35,10 @@ public class MeResponseDto {
 
     public String getRol() { return rol; }
     public void setRol(String rol) { this.rol = rol; }
+
+    public Set<Long> getSeccionIds() { return seccionIds; }
+    public void setSeccionIds(Set<Long> seccionIds) { this.seccionIds = seccionIds; }
+
+    public Set<Integer> getMateriaIds() { return materiaIds; }
+    public void setMateriaIds(Set<Integer> materiaIds) { this.materiaIds = materiaIds; }
 }

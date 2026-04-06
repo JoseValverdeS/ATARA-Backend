@@ -145,6 +145,7 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * Devuelve los datos del usuario actualmente autenticado, extraídos del SecurityContext.
+     * Para docentes incluye las secciones y materias asignadas.
      */
     @Override
     @Transactional(readOnly = true)
@@ -158,6 +159,8 @@ public class AuthServiceImpl implements AuthService {
         response.setNombre(usuario.getNombre());
         response.setApellidos(usuario.getApellidos());
         response.setRol(usuario.getRol().getNombre());
+        response.setSeccionIds(usuarioRepository.findSeccionIdsByUsuarioId(usuario.getId()));
+        response.setMateriaIds(usuarioRepository.findMateriaIdsByUsuarioId(usuario.getId()));
         return response;
     }
 

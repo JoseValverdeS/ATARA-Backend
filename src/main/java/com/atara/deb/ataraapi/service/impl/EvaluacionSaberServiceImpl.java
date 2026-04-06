@@ -4,6 +4,8 @@ import com.atara.deb.ataraapi.dto.saber.*;
 import com.atara.deb.ataraapi.model.*;
 import com.atara.deb.ataraapi.model.enums.NivelAlertaTematica;
 import com.atara.deb.ataraapi.repository.*;
+import com.atara.deb.ataraapi.security.ContextoUsuario;
+import com.atara.deb.ataraapi.security.ContextoUsuarioService;
 import com.atara.deb.ataraapi.service.EvaluacionSaberService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
     private final EjeTemaaticoRepository ejeTemaaticoRepository;
     private final MatriculaRepository matriculaRepository;
     private final MateriaRepository materiaRepository;
+    private final ContextoUsuarioService contextoUsuarioService;
 
     public EvaluacionSaberServiceImpl(
             EvaluacionSaberRepository evaluacionSaberRepository,
@@ -39,7 +42,8 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
             TipoSaberRepository tipoSaberRepository,
             EjeTemaaticoRepository ejeTemaaticoRepository,
             MatriculaRepository matriculaRepository,
-            MateriaRepository materiaRepository) {
+            MateriaRepository materiaRepository,
+            ContextoUsuarioService contextoUsuarioService) {
         this.evaluacionSaberRepository = evaluacionSaberRepository;
         this.detalleRepository = detalleRepository;
         this.estudianteRepository = estudianteRepository;
@@ -50,6 +54,7 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
         this.ejeTemaaticoRepository = ejeTemaaticoRepository;
         this.matriculaRepository = matriculaRepository;
         this.materiaRepository = materiaRepository;
+        this.contextoUsuarioService = contextoUsuarioService;
     }
 
     @Override
@@ -67,6 +72,15 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
             .orElseThrow(() -> new NoSuchElementException("Tipo de saber no encontrado con ID: " + request.getTipoSaberId()));
         Materia materia = materiaRepository.findById(request.getMateriaId())
             .orElseThrow(() -> new NoSuchElementException("Materia no encontrada con ID: " + request.getMateriaId()));
+
+        // Validar que el usuario autenticado tiene acceso a esta sección y materia
+        ContextoUsuario contexto = contextoUsuarioService.obtenerContextoActual();
+        contexto.verificarSeccion(seccion.getId());
+        contexto.verificarMateria(materia.getId());
+
+        // Usar siempre el usuario autenticado como autor de la evaluación
+        usuario = usuarioRepository.findById(contexto.usuarioId())
+            .orElseThrow(() -> new NoSuchElementException("Usuario autenticado no encontrado."));
 
         List<EjeTematico> ejesDelTipo = ejeTemaaticoRepository
             .findByMateriaIdAndTipoSaberIdOrderByOrden(materia.getId(), tipoSaber.getId());
@@ -114,6 +128,11 @@ public class EvaluacionSaberServiceImpl implements EvaluacionSaberService {
     public EvaluacionSaberResponseDto actualizar(Long id, EvaluacionSaberRequestDto request) {
         EvaluacionSaber eval = evaluacionSaberRepository.findById(id)
             .orElseThrow(() -> new NoSuchElementException("Evaluación por saber no encontrada con ID: " + id));
+
+        // Validar que el usuario autenticado tiene acceso a la sección de esta evaluación
+        ContextoUsuario contexto = contextoUsuarioService.obtenerContextoActual();
+        contexto.verificarSeccion(eval.getSeccion().getId());
+        contexto.verificarMateria(eval.getMateria().getId());
 
         List<EjeTematico> ejesDelTipo = ejeTemaaticoRepository
             .findByMateriaIdAndTipoSaberIdOrderByOrden(

@@ -14,6 +14,8 @@ import com.atara.deb.ataraapi.repository.DetalleEvaluacionSaberRepository;
 import com.atara.deb.ataraapi.repository.EstudianteRepository;
 import com.atara.deb.ataraapi.repository.MatriculaRepository;
 import com.atara.deb.ataraapi.repository.PeriodoRepository;
+import com.atara.deb.ataraapi.security.ContextoUsuario;
+import com.atara.deb.ataraapi.security.ContextoUsuarioService;
 import com.atara.deb.ataraapi.service.AlertaTematicaService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,23 +38,29 @@ public class AlertaTematicaServiceImpl implements AlertaTematicaService {
     private final EstudianteRepository estudianteRepository;
     private final PeriodoRepository periodoRepository;
     private final MatriculaRepository matriculaRepository;
+    private final ContextoUsuarioService contextoUsuarioService;
 
     public AlertaTematicaServiceImpl(
             AlertaTematicaRepository alertaRepository,
             DetalleEvaluacionSaberRepository detalleRepository,
             EstudianteRepository estudianteRepository,
             PeriodoRepository periodoRepository,
-            MatriculaRepository matriculaRepository) {
+            MatriculaRepository matriculaRepository,
+            ContextoUsuarioService contextoUsuarioService) {
         this.alertaRepository = alertaRepository;
         this.detalleRepository = detalleRepository;
         this.estudianteRepository = estudianteRepository;
         this.periodoRepository = periodoRepository;
         this.matriculaRepository = matriculaRepository;
+        this.contextoUsuarioService = contextoUsuarioService;
     }
 
     @Override
     @Transactional
     public List<AlertaTematicaResponseDto> generarAlertasPorEstudiante(Long estudianteId, Long periodoId) {
+        ContextoUsuario contexto = contextoUsuarioService.obtenerContextoActual();
+        contextoUsuarioService.verificarAccesoAlEstudiante(estudianteId, contexto);
+
         Estudiante estudiante = estudianteRepository.findById(estudianteId)
             .orElseThrow(() -> new NoSuchElementException("Estudiante no encontrado con ID: " + estudianteId));
         Periodo periodo = periodoRepository.findById(periodoId)
@@ -71,6 +79,9 @@ public class AlertaTematicaServiceImpl implements AlertaTematicaService {
     @Override
     @Transactional
     public List<AlertaTematicaResponseDto> generarAlertasPorSeccion(Long seccionId, Long periodoId) {
+        ContextoUsuario contexto = contextoUsuarioService.obtenerContextoActual();
+        contexto.verificarSeccion(seccionId);
+
         periodoRepository.findById(periodoId)
             .orElseThrow(() -> new NoSuchElementException("Periodo no encontrado con ID: " + periodoId));
 
@@ -87,6 +98,9 @@ public class AlertaTematicaServiceImpl implements AlertaTematicaService {
 
     @Override
     public List<AlertaTematicaResponseDto> obtenerAlertasPorEstudiante(Long estudianteId, Long periodoId) {
+        ContextoUsuario contexto = contextoUsuarioService.obtenerContextoActual();
+        contextoUsuarioService.verificarAccesoAlEstudiante(estudianteId, contexto);
+
         return alertaRepository.findByEstudianteIdAndPeriodoId(estudianteId, periodoId)
             .stream()
             .map(this::toDto)
@@ -95,6 +109,9 @@ public class AlertaTematicaServiceImpl implements AlertaTematicaService {
 
     @Override
     public List<AlertaTematicaResponseDto> obtenerAlertasPorSeccion(Long seccionId, Long periodoId) {
+        ContextoUsuario contexto = contextoUsuarioService.obtenerContextoActual();
+        contexto.verificarSeccion(seccionId);
+
         List<Long> estudianteIds = matriculaRepository.findBySeccionId(seccionId).stream()
             .map(m -> m.getEstudiante().getId())
             .toList();

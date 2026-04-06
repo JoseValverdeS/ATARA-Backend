@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "usuarios")
@@ -49,4 +51,24 @@ public class Usuario {
 
     @Column(name = "updated_at", insertable = false, updatable = false)
     private OffsetDateTime updatedAt;
+
+    /** Secciones asignadas al usuario (tabla join: usuarios_secciones). */
+    @Builder.Default
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "usuarios_secciones",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "seccion_id")
+    )
+    private List<Seccion> seccionesAsignadas = new ArrayList<>();
+
+    /** Materias asignadas al usuario (tabla join: usuario_materias). */
+    @Builder.Default
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "usuario_materias",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "materia_id")
+    )
+    private List<Materia> materiasAsignadas = new ArrayList<>();
 }
