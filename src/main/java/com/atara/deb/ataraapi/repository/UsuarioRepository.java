@@ -18,8 +18,19 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     List<Usuario> findByEstado(EstadoUsuario estado);
 
-    /** IDs de las secciones asignadas al usuario vía usuarios_secciones. */
-    @Query("SELECT s.id FROM Usuario u JOIN u.seccionesAsignadas s WHERE u.id = :usuarioId")
+    /**
+     * IDs de las secciones accesibles para el usuario:
+     * - secciones donde es docente titular (secciones.docente_id)
+     * - secciones asignadas explícitamente (usuarios_secciones)
+     * Ambas fuentes se combinan con UNION para evitar duplicados.
+     */
+    @Query(value = """
+        SELECT DISTINCT s.id FROM secciones s
+        WHERE s.docente_id = :usuarioId
+        UNION
+        SELECT us.seccion_id FROM usuarios_secciones us
+        WHERE us.usuario_id = :usuarioId
+        """, nativeQuery = true)
     Set<Long> findSeccionIdsByUsuarioId(@Param("usuarioId") Long usuarioId);
 
     /** IDs de las materias asignadas al usuario vía usuario_materias. */
