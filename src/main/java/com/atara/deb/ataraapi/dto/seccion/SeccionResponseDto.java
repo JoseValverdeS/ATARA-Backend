@@ -16,4 +16,5 @@ public class SeccionResponseDto {
     private String centroNombre;
     private String docenteNombreCompleto;
     private Short capacidad;
+    private int totalEstudiantes;
 }

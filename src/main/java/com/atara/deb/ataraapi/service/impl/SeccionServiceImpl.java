@@ -6,6 +6,7 @@ import com.atara.deb.ataraapi.dto.seccion.SeccionRequestDto;
 import com.atara.deb.ataraapi.dto.seccion.SeccionResponseDto;
 import com.atara.deb.ataraapi.dto.usuario.UsuarioDocenteResponseDto;
 import com.atara.deb.ataraapi.model.*;
+import com.atara.deb.ataraapi.model.enums.EstadoMatricula;
 import com.atara.deb.ataraapi.model.enums.EstadoUsuario;
 import com.atara.deb.ataraapi.repository.*;
 import com.atara.deb.ataraapi.service.SeccionService;
@@ -197,6 +198,7 @@ public class SeccionServiceImpl implements SeccionService {
                 .centroNombre(s.getCentro().getNombre())
                 .docenteNombreCompleto(docenteNombre)
                 .capacidad(s.getCapacidad())
+                .totalEstudiantes(matriculaRepository.countBySeccionIdAndEstado(s.getId(), EstadoMatricula.ACTIVO))
                 .build();
     }
 }

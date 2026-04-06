@@ -8,6 +8,7 @@ import com.atara.deb.ataraapi.dto.usuario.UsuarioDocenteResponseDto;
 import com.atara.deb.ataraapi.service.SeccionService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -79,7 +80,8 @@ public class SeccionController {
         return ResponseEntity.ok(seccionService.actualizarSeccion(id, dto));
     }
 
-    /** DELETE /api/secciones/{id} — elimina la sección y sus matrículas y evaluaciones. */
+    /** DELETE /api/secciones/{id} — elimina la sección y sus matrículas y evaluaciones. Solo ADMIN. */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         seccionService.eliminar(id);
