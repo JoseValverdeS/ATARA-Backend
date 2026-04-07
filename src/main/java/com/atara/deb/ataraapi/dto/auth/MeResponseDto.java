@@ -18,6 +18,8 @@ public class MeResponseDto {
     private Set<Long> seccionIds;
     /** IDs de las materias asignadas. Vacío si el usuario es ADMIN o COORDINADOR. */
     private Set<Integer> materiaIds;
+    /** IDs de los centros educativos donde el usuario tiene secciones asignadas. */
+    private Set<Long> centroIds;
 
     public MeResponseDto() {}
 
@@ -41,4 +43,7 @@ public class MeResponseDto {
 
     public Set<Integer> getMateriaIds() { return materiaIds; }
     public void setMateriaIds(Set<Integer> materiaIds) { this.materiaIds = materiaIds; }
+
+    public Set<Long> getCentroIds() { return centroIds; }
+    public void setCentroIds(Set<Long> centroIds) { this.centroIds = centroIds; }
 }

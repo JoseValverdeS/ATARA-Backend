@@ -161,6 +161,7 @@ public class AuthServiceImpl implements AuthService {
         response.setRol(usuario.getRol().getNombre());
         response.setSeccionIds(usuarioRepository.findSeccionIdsByUsuarioId(usuario.getId()));
         response.setMateriaIds(usuarioRepository.findMateriaIdsByUsuarioId(usuario.getId()));
+        response.setCentroIds(usuarioRepository.findCentroIdsByUsuarioId(usuario.getId()));
         return response;
     }
 

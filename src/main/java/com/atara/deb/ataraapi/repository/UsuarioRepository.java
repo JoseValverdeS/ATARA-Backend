@@ -36,4 +36,19 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     /** IDs de las materias asignadas al usuario vía usuario_materias. */
     @Query("SELECT m.id FROM Usuario u JOIN u.materiasAsignadas m WHERE u.id = :usuarioId")
     Set<Integer> findMateriaIdsByUsuarioId(@Param("usuarioId") Long usuarioId);
+
+    /**
+     * IDs de los centros educativos asociados a las secciones accesibles del usuario:
+     * - secciones donde es docente titular
+     * - secciones asignadas explícitamente vía usuarios_secciones
+     */
+    @Query(value = """
+        SELECT DISTINCT s.centro_id FROM secciones s
+        WHERE s.docente_id = :usuarioId
+        UNION
+        SELECT DISTINCT s.centro_id FROM secciones s
+        JOIN usuarios_secciones us ON s.id = us.seccion_id
+        WHERE us.usuario_id = :usuarioId
+        """, nativeQuery = true)
+    Set<Long> findCentroIdsByUsuarioId(@Param("usuarioId") Long usuarioId);
 }
